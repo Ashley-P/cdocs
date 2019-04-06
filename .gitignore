@@ -13,3 +13,6 @@ src/obj/*.o
 
 # Logging files
 bin/logs/*.log
+
+# Ignore anything in bin really
+bin/*

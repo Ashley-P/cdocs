@@ -1,0 +1,31 @@
+# Document Generator
+
+## Description
+
+Generates a static website with documentation for a set of c source files
+
+
+## General Ideas
+
+Config file?
+Should accept some flags and arguments
+
+## Syntax ideas
+
+@@ should be used to set attributes e.g @@param @@name -- Maybe a function thing only
+Structs, enums and defines should be included in their own areas
+Files should also have an overview page (Maybe a description of the file then hyperlinks to the relevant data)
+
+## Command ideas
+new:
+    Arguments:
+        1. The directory where the source files are located (A basic check to see if there is atleast 1 file with a .c/.h extension)
+        2. The directory to store the html files and other things that may appear (So a general docs file where the program can create it's own directories)
+
+    Description:
+Creates a default config file for the user to edit before using the regen command
+
+regen:
+    1. filename of a options/config file?
+
+
