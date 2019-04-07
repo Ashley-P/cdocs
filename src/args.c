@@ -1,6 +1,7 @@
 #ifdef __unix__
 # error Unix is unsupported
 #elif defined _WIN32
+# include <io.h>
 # include <windows.h>
 #endif
 
@@ -20,7 +21,11 @@ static char *command_names[] = {"new",
  * @NOTE : The config file is placed in the docs directory
  */
 void c_new(char *source, char *docs) {
-    
+    // Check both directory names
+    if (_access(source, 0) == -1) {
+        printf("Invalid directory name \"%s\"", source);
+    }
+
 }
 
 /**
@@ -34,6 +39,17 @@ void parse_arguments(int argc, char** argv) {
     if (!string_in_strings(argv[1], command_names, COMMAND_NUM)) {
         printf("Invalid command \"%s\"", argv[1]);
         return;
+    }
+
+    /* new */
+    if (string_cmp(argv[1], command_names[0])) {
+        if (argc != 4) {
+            printf("Incorrect number of arguments");
+            return;
+        }
+        c_new(argv[2], argv[3]);
+    /* regen */
+    } else if (string_cmp(argv[1], command_names[1])) {
     }
 
     printf("Valid!");
