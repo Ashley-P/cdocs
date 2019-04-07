@@ -210,6 +210,28 @@ int w_str_to_int(const wchar_t *str) {
     return a;
 }
 
+int string_cmp(const char *a, const char *b) {
+    for (int i = 0;; i++) {
+        if (*(a + i) == L'\0' && *(b + i) == L'\0') {
+            return 1;
+        } else if (*(a + i) == *(b + i)) {
+            continue;
+        } else 
+            return 0;
+    }
+}
+
+/**
+ * Compares a string with a list of strings
+ */
+int string_in_strings(char *str, char **strs, int len) {
+    for (int i = 0; i < len; i++)
+        if (string_cmp(str, *(strs + i))) return 1;
+
+    return 0;
+}
+
+
 unsigned char is_digit(wchar_t ch) {
     if (ch >= L'0' && ch <= L'9') return 1;
     else return 0;

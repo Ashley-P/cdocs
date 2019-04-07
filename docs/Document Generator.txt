@@ -23,9 +23,19 @@ new:
         2. The directory to store the html files and other things that may appear (So a general docs file where the program can create it's own directories)
 
     Description:
-Creates a default config file for the user to edit before using the regen command
+        Creates a default config file for the user to edit before using the regen command
 
 regen:
-    1. filename of a options/config file?
+    Arguments:
+        1. filename of a options/config file?
 
+    Description:
+        Creates all the documentation based on the config file
 
+## Config file
+
+Should have a bunch of values preset so that regen can create the documentation
+
+### Configs
+SourceDirectory : Is where the source files are
+DocsDirectory   : Is where the docs should be located
