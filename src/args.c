@@ -22,9 +22,32 @@ static char *command_names[] = {"new",
  */
 void c_new(char *source, char *docs) {
     // Check both directory names
-    if (_access(source, 0) == -1) {
+    // Windows only
+#ifdef _WIN32
+    if (GetFileAttributesA(source) == INVALID_FILE_ATTRIBUTES ||
+        !(GetFileAttributesA(source) & FILE_ATTRIBUTE_DIRECTORY)) {
         printf("Invalid directory name \"%s\"", source);
+        return;
+    } else if (GetFileAttributesA(docs) == INVALID_FILE_ATTRIBUTES ||
+        !(GetFileAttributesA(docs) & FILE_ATTRIBUTE_DIRECTORY)) {
+        printf("Invalid directory name \"%s\"", docs);
+        return;
     }
+/*
+       GetFileAttributesA(source) & FILE_ATTRIBUTE_DIRECTORY) {
+        printf("Invalid directory name \"%s\"", source);
+        return;
+    } else {
+        printf("Directory exists!");
+    }
+    */
+#endif
+
+    printf("\n%ld", GetFileAttributesA(source));
+    printf("\n%ld", GetFileAttributesA(docs));
+    printf("\n%ld", INVALID_FILE_ATTRIBUTES);
+
+
 
 }
 
@@ -49,8 +72,5 @@ void parse_arguments(int argc, char** argv) {
         }
         c_new(argv[2], argv[3]);
     /* regen */
-    } else if (string_cmp(argv[1], command_names[1])) {
-    }
-
-    printf("Valid!");
+    } else if (string_cmp(argv[1], command_names[1])) {}
 }
