@@ -6,6 +6,7 @@
 #endif
 
 #include <stdio.h>
+#include "defs.h"
 #include "utils.h"
 
 
@@ -33,22 +34,16 @@ void c_new(char *source, char *docs) {
         printf("Invalid directory name \"%s\"", docs);
         return;
     }
-/*
-       GetFileAttributesA(source) & FILE_ATTRIBUTE_DIRECTORY) {
-        printf("Invalid directory name \"%s\"", source);
-        return;
-    } else {
-        printf("Directory exists!");
-    }
-    */
 #endif
 
-    printf("\n%ld", GetFileAttributesA(source));
-    printf("\n%ld", GetFileAttributesA(docs));
-    printf("\n%ld", INVALID_FILE_ATTRIBUTES);
-
-
-
+    // Create a config file in docs with both filenames in
+    // @NOTE: No check right now to see if the file exists
+    char path[MAX_BUFSIZE_MED];
+    sprintf(path, "%scdocs.cfg", docs);
+    FILE *f = fopen(path, "w+");
+    fprintf(f, "SourceDirectory=%s\n", source);
+    fprintf(f, "DocsDirectory=%s\n", docs);
+    fclose(f);
 }
 
 /**
