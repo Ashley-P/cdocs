@@ -25,6 +25,7 @@ void w_shift_chars_right(wchar_t *str, size_t sz, int shift_len, int shift_pos);
 void w_shift_chars_left(wchar_t *str, size_t sz, int shift_len, int shift_pos);
 int w_ch_in_str(const wchar_t ch, const wchar_t *str);
 int w_str_to_int(const wchar_t *str);
+int string_len(const char *str);
 int string_cmp(const char *a, const char *b);
 int string_in_strings(char *str, char **strs, int len);
 unsigned char is_digit(wchar_t ch);

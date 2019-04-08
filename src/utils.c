@@ -210,6 +210,15 @@ int w_str_to_int(const wchar_t *str) {
     return a;
 }
 
+int string_len(const char *str) {
+    int i = 0;
+    while (*(str + i) != '\0' && *(str + i) != '\n') {
+        i++;
+    }
+
+    return i;
+}
+
 int string_cmp(const char *a, const char *b) {
     for (int i = 0;; i++) {
         if (*(a + i) == L'\0' && *(b + i) == L'\0') {

@@ -16,3 +16,6 @@ bin/logs/*.log
 
 # Ignore anything in bin really
 bin/*
+
+# Other Testing stuff
+docs/cdocs.cfg

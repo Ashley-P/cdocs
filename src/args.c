@@ -15,6 +15,9 @@
 static char *command_names[] = {"new",
                                 "regen",};
 
+/* Function Prototypes */
+void *construct_filename(char *buf, char *path);
+
 /**
  * Creates a config file based on the two arguments
  * Arg 1: Directory where the source files are
@@ -39,11 +42,28 @@ void c_new(char *source, char *docs) {
     // Create a config file in docs with both filenames in
     // @NOTE: No check right now to see if the file exists
     char path[MAX_BUFSIZE_MED];
-    sprintf(path, "%scdocs.cfg", docs);
+    sprintf(path, "%s/cdocs.cfg", docs);
+
+#ifdef _WIN32
+    // Checking if the file exists
+    char input[1];
+    if (!(GetFileAttributesA(source) == INVALID_FILE_ATTRIBUTES)) {
+        do {
+            printf("File \"%s\" already exists, would you like to overwrite? \n[Y]es [N]o\n", path);
+            scanf(" %c", input);
+        } while (input[0] != 'y' && input[0] != 'Y' && input[0] != 'n' && input[0] != 'N');
+
+        if (input[0] == 'n' || input[0] == 'N') // @TODO: Should create a "to_lower" function
+            return;
+    }
+#endif
+
+    // Check if docs has a slash at the end
     FILE *f = fopen(path, "w+");
     fprintf(f, "SourceDirectory=%s\n", source);
     fprintf(f, "DocsDirectory=%s\n", docs);
     fclose(f);
+    printf("\nConfig file created at \"%s\"", path);
 }
 
 /**
