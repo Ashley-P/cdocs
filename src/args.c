@@ -15,9 +15,6 @@
 static char *command_names[] = {"new",
                                 "regen",};
 
-/* Function Prototypes */
-void *construct_filename(char *buf, char *path);
-
 /**
  * Creates a config file based on the two arguments
  * Arg 1: Directory where the source files are
@@ -88,6 +85,11 @@ void c_regen(char *config) {
 }
 
 void parse_arguments(int argc, char** argv) {
+    // Just return if there is no argument supplied
+    if (argc < 2) {
+        return;
+    }
+
     // First is the basic check to see if the argv[0] is a valid command name
     if (!string_in_strings(argv[1], command_names, COMMAND_NUM)) {
         printf("Invalid command \"%s\"", argv[1]);
