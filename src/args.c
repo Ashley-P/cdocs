@@ -70,6 +70,21 @@ void c_new(char *source, char *docs) {
  * Creates the documentation based the config file
  */
 void c_regen(char *config) {
+#ifdef _WIN32
+    // Check the path to the config file is correct
+    if (GetFileAttributesA(config) == INVALID_FILE_ATTRIBUTES) {
+        printf("Invalid file path \"%s\"", config);
+        return;
+    }
+#endif
+
+    // just read the file for now
+    FILE *f = fopen(config, "r");
+    int a = 0;
+    char str[MAX_BUFSIZE_MED];
+    while ((a = fscanf(f, "%s", str)) != EOF) {
+        printf("%s\n", str);
+    }
 }
 
 void parse_arguments(int argc, char** argv) {
@@ -86,6 +101,13 @@ void parse_arguments(int argc, char** argv) {
             return;
         }
         c_new(argv[2], argv[3]);
+
     /* regen */
-    } else if (string_cmp(argv[1], command_names[1])) {}
+    } else if (string_cmp(argv[1], command_names[1])) {
+        if (argc != 3) {
+            printf("Incorrect number of arguments");
+            return;
+        }
+        c_regen(argv[2]);
+    }
 }
