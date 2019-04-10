@@ -6,7 +6,7 @@ src/obj/*.o
 *.swo
 
 # Test Executables
-*.exe
+/bin/*.exe
 
 # Powershell scripts
 *.ps1
@@ -14,8 +14,7 @@ src/obj/*.o
 # Logging files
 bin/logs/*.log
 
-# Ignore anything in bin really
-bin/*
-
 # Other Testing stuff
 docs/cdocs.cfg
+docs/html
+docs/templates

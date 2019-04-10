@@ -17,6 +17,14 @@ static inline struct HtmlBuffer *create_html_buffer() {
 
     return ptr;
 }
+
+static inline void delete_html_buffer(struct HtmlBuffer *buf) {
+    for (int i = 0; i < MAX_BUFSIZE_MED; i++)
+        free(*(buf->buf + i));
+    free(buf->buf);
+    free(buf);
+}
+
 /**
  * Loads a html file into a buffer
  * @NOTE: Creates the buffer that is used
@@ -26,6 +34,14 @@ struct HtmlBuffer *load_html(char *fn) {
     struct HtmlBuffer *buf = create_html_buffer();
 
     FILE *f = fopen(fn, "r");
+
+    if (!f) {
+        // Proper error logging soon
+        printf("\nError in load_html: File does not exist");
+        delete_html_buffer(buf);
+        return NULL;
+    }
+
     char ch;
     int y_pos = 0;
     int x_pos = 0;
