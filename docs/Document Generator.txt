@@ -22,12 +22,18 @@ new:
         1. The directory where the source files are located (A basic check to see if there is atleast 1 file with a .c/.h extension)
         2. The directory to store the html files and other things that may appear (So a general docs file where the program can create it's own directories)
 
+    Flags:
+        -no-css; Doesn't import the css file in case the user wants to use a custom one
+
     Description:
         Creates a default config file for the user to edit before using the regen command
 
 regen:
     Arguments:
         1. filename of a options/config file?
+
+    Flags:
+        None
 
     Description:
         Creates all the documentation based on the config file
@@ -39,3 +45,4 @@ Should have a bunch of values preset so that regen can create the documentation
 ### Configs
 SourceDirectory : Is where the source files are
 DocsDirectory   : Is where the docs should be located
+TopNav          : This could be used to add custom links on the top navigation bar to point to other user written pieces of documentation would use a += type syntax

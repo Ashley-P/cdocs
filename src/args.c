@@ -23,7 +23,6 @@ static char *command_names[] = {"new",
  */
 void c_new(char *source, char *docs) {
     // Check both directory names
-    // Windows only
 #ifdef _WIN32
     if (GetFileAttributesA(source) == INVALID_FILE_ATTRIBUTES ||
         !(GetFileAttributesA(source) & FILE_ATTRIBUTE_DIRECTORY)) {
@@ -37,7 +36,6 @@ void c_new(char *source, char *docs) {
 #endif
 
     // Create a config file in docs with both filenames in
-    // @NOTE: No check right now to see if the file exists
     char path[MAX_BUFSIZE_MED];
     sprintf(path, "%s/cdocs.cfg", docs);
 
@@ -53,9 +51,24 @@ void c_new(char *source, char *docs) {
         if (input[0] == 'n' || input[0] == 'N') // @TODO: Should create a "to_lower" function
             return;
     }
+    
+    // Checking and creating the extra directories
+    char path2[MAX_BUFSIZE_MED];
+
+    // html directory
+    sprintf(path2, "%s/html", docs);
+    if (GetFileAttributesA(path2) == INVALID_FILE_ATTRIBUTES) {
+        _mkdir(path2);
+    }
+
+    // templates directory
+    sprintf(path2, "%s/templates", docs);
+    if (GetFileAttributesA(path2) == INVALID_FILE_ATTRIBUTES) {
+        _mkdir(path2);
+    }
+
 #endif
 
-    // Check if docs has a slash at the end
     FILE *f = fopen(path, "w+");
     fprintf(f, "SourceDirectory=%s\n", source);
     fprintf(f, "DocsDirectory=%s\n", docs);
