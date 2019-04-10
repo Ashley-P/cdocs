@@ -2,7 +2,17 @@
 #include <stdio.h>
 #include "defs.h"
 #include "html.h"
+#include "utils.h"
 
+// These static variables locate the positions of the comments in the template html file
+unsigned short template_cdocs_topnav;
+unsigned short template_cdocs_sidenav;
+unsigned short template_cdocs_content;
+
+/*
+#define COMMENT_LEN 11
+const static char comment_start[] = "<!-- CDOCS:";
+*/
 
 
 static inline struct HtmlBuffer *create_html_buffer() {
@@ -37,7 +47,7 @@ struct HtmlBuffer *load_html(char *fn) {
 
     if (!f) {
         // Proper error logging soon
-        printf("\nError in load_html: File does not exist");
+        fprintf(stderr, "\nError in load_html: File does not exist");
         delete_html_buffer(buf);
         return NULL;
     }
@@ -58,4 +68,32 @@ struct HtmlBuffer *load_html(char *fn) {
     }
 
     return buf;
+}
+
+void save_html(struct HtmlBuffer buf, char *fn) {}
+
+
+// Returns a pointer that is a the first non-whitespace character in the string
+static inline char *consume_spaces(char *str) {
+    char *tmp = str;
+    while (*tmp == ' ')
+        ++tmp;
+
+    return tmp;
+}
+
+/**
+ * Finds the html comment <!-- CDOCS:<comment> --> and returns the line number
+ * 0 on failure
+ */
+unsigned short find_comment(struct HtmlBuffer *buf, char *comment) {
+    // For each line we consume the spaces and check if the first letters of the string match a comment
+    char *c;
+    for (int y = 0; y < buf->y_len; y++) {
+        c = consume_spaces(*(buf->buf + y));
+        if (string_cmp2(c, comment, string_len(comment) - 1))
+            return y;
+    }
+
+    return 0;
 }

@@ -221,13 +221,26 @@ int string_len(const char *str) {
 
 int string_cmp(const char *a, const char *b) {
     for (int i = 0;; i++) {
-        if (*(a + i) == L'\0' && *(b + i) == L'\0') {
+        if (*(a + i) == '\0' && *(b + i) == '\0') {
             return 1;
         } else if (*(a + i) == *(b + i)) {
             continue;
         } else 
             return 0;
     }
+}
+
+int string_cmp2(const char *a, const char *b, int len) {
+    for (int i = 0; i < len; i++) {
+        if (*(a + i) == '\0' && *(b + i) == '\0') {
+            return 1;
+        } else if (*(a + i) == *(b + i)) {
+            continue;
+        } else 
+            return 0;
+    }
+
+    return 1;
 }
 
 /**

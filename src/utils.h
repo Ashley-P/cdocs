@@ -27,6 +27,7 @@ int w_ch_in_str(const wchar_t ch, const wchar_t *str);
 int w_str_to_int(const wchar_t *str);
 int string_len(const char *str);
 int string_cmp(const char *a, const char *b);
+int string_cmp2(const char *a, const char *b, int len);
 int string_in_strings(const char *str, const char **strs, int len);
 void str_cpy(const char *src, char* dest);
 unsigned char is_digit(wchar_t ch);

@@ -29,14 +29,14 @@ void parse_arguments(int argc, char** argv) {
 
     // First is the basic check to see if the argv[0] is a valid command name
     if (!string_in_strings(argv[1], command_names, COMMAND_NUM)) {
-        printf("Invalid command \"%s\"", argv[1]);
+        fprintf(stderr, "Invalid command \"%s\"", argv[1]);
         return;
     }
 
     /* new */
     if (string_cmp(argv[1], command_names[0])) {
         if (argc != 4) {
-            printf("Incorrect number of arguments");
+            fprintf(stderr, "Incorrect number of arguments");
             return;
         }
         c_new(argv[2], argv[3]);
@@ -44,7 +44,7 @@ void parse_arguments(int argc, char** argv) {
     /* regen */
     } else if (string_cmp(argv[1], command_names[1])) {
         if (argc != 3) {
-            printf("Incorrect number of arguments");
+            fprintf(stderr, "Incorrect number of arguments");
             return;
         }
         c_regen(argv[2]);
@@ -62,11 +62,11 @@ void c_new(char *source, char *docs) {
 #ifdef _WIN32
     if (GetFileAttributesA(source) == INVALID_FILE_ATTRIBUTES ||
         !(GetFileAttributesA(source) & FILE_ATTRIBUTE_DIRECTORY)) {
-        printf("Invalid directory name \"%s\"", source);
+        fprintf(stderr, "Invalid directory name \"%s\"", source);
         return;
     } else if (GetFileAttributesA(docs) == INVALID_FILE_ATTRIBUTES ||
         !(GetFileAttributesA(docs) & FILE_ATTRIBUTE_DIRECTORY)) {
-        printf("Invalid directory name \"%s\"", docs);
+        fprintf(stderr, "Invalid directory name \"%s\"", docs);
         return;
     }
 #endif
@@ -138,7 +138,31 @@ void c_regen(char *config) {
     *(template + slash_pos) = '\0';
     sprintf(template, "%s\\resources\\template.html", template);
 
+
     struct HtmlBuffer *buf = load_html(template);
 
+    // Set up the globals in html.c
+    template_cdocs_topnav  = find_comment(buf, "<!-- CDOCS:TOPNAV -->");
+    template_cdocs_sidenav = find_comment(buf, "<!-- CDOCS:SIDENAV -->");
+    template_cdocs_content = find_comment(buf, "<!-- CDOCS:CONTENT -->");
+
+    if (template_cdocs_topnav == 0) {
+        fprintf(stderr, "Error: \"CDOCS:TOPNAV\" couldn't be located in \"%s\"", template);
+        return;
+    }
+
+    if (template_cdocs_sidenav == 0) {
+        fprintf(stderr, "Error: \"CDOCS:SIDENAV\" couldn't be located in \"%s\"", template);
+        return;
+    }
+
+    if (template_cdocs_content == 0) {
+        fprintf(stderr, "Error: \"CDOCS:CONTENT\" couldn't be located in \"%s\"", template);
+        return;
+    }
+
+    printf("CDOCS:TOPNAV @ line %d\n", template_cdocs_topnav);
+    printf("CDOCS:SIDENAV @ line %d\n", template_cdocs_sidenav);
+    printf("CDOCS:CONTENT @ line %d\n", template_cdocs_content);
 }
 
