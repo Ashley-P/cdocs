@@ -139,30 +139,10 @@ void c_regen(char *config) {
     sprintf(template, "%s\\resources\\template.html", template);
 
 
+    // Loading the template for pre-editing before generating the documents
     struct HtmlBuffer *buf = load_html(template);
+    struct TemplatePositions *template_positions = malloc(sizeof(struct TemplatePositions));
 
-    // Set up the globals in html.c
-    template_cdocs_topnav  = find_comment(buf, "<!-- CDOCS:TOPNAV -->");
-    template_cdocs_sidenav = find_comment(buf, "<!-- CDOCS:SIDENAV -->");
-    template_cdocs_content = find_comment(buf, "<!-- CDOCS:CONTENT -->");
-
-    if (template_cdocs_topnav == 0) {
-        fprintf(stderr, "Error: \"CDOCS:TOPNAV\" couldn't be located in \"%s\"", template);
-        return;
-    }
-
-    if (template_cdocs_sidenav == 0) {
-        fprintf(stderr, "Error: \"CDOCS:SIDENAV\" couldn't be located in \"%s\"", template);
-        return;
-    }
-
-    if (template_cdocs_content == 0) {
-        fprintf(stderr, "Error: \"CDOCS:CONTENT\" couldn't be located in \"%s\"", template);
-        return;
-    }
-
-    printf("CDOCS:TOPNAV @ line %d\n", template_cdocs_topnav);
-    printf("CDOCS:SIDENAV @ line %d\n", template_cdocs_sidenav);
-    printf("CDOCS:CONTENT @ line %d\n", template_cdocs_content);
+    printf("Valid!");
 }
 

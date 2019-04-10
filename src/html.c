@@ -4,15 +4,6 @@
 #include "html.h"
 #include "utils.h"
 
-// These static variables locate the positions of the comments in the template html file
-unsigned short template_cdocs_topnav;
-unsigned short template_cdocs_sidenav;
-unsigned short template_cdocs_content;
-
-/*
-#define COMMENT_LEN 11
-const static char comment_start[] = "<!-- CDOCS:";
-*/
 
 
 static inline struct HtmlBuffer *create_html_buffer() {
@@ -67,6 +58,7 @@ struct HtmlBuffer *load_html(char *fn) {
         }
     }
 
+    fclose(f);
     return buf;
 }
 
@@ -96,4 +88,24 @@ unsigned short find_comment(struct HtmlBuffer *buf, char *comment) {
     }
 
     return 0;
+}
+
+/**
+ * Checks the buffer for the cdocs comments
+ * returns 0 on failure and 1 on success
+ * @TODO: Error checking
+ */
+int recheck_template_positions(struct HtmlBuffer *buf, struct TemplatePositions *tp) {
+    tp->topnav  = find_comment(buf, "<!-- CDOCS:TOPNAV -->");
+    tp->sidenav = find_comment(buf, "<!-- CDOCS:SIDENAV -->");
+    tp->content = find_comment(buf, "<!-- CDOCS:CONTENT -->");
+
+    tp->sidenav_files     = find_comment(buf, "<!-- CDOCS:SIDENAV:FILES -->");
+    tp->sidenav_functions = find_comment(buf, "<!-- CDOCS:SIDENAV:FUNCTIONS -->");
+    tp->sidenav_structs   = find_comment(buf, "<!-- CDOCS:SIDENAV:STRUCTS -->");
+    tp->sidenav_defines   = find_comment(buf, "<!-- CDOCS:SIDENAV:DEFINES -->");
+    tp->sidenav_enums     = find_comment(buf, "<!-- CDOCS:SIDENAV:ENUMS -->");
+
+
+    return 1;
 }
