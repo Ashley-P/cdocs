@@ -118,8 +118,9 @@ void c_new(char *source, char *docs) {
 void c_regen(char *config) {
 #ifdef _WIN32
     // Check the path to the config file is correct
-    if (GetFileAttributesA(config) == INVALID_FILE_ATTRIBUTES) {
-        printf("Invalid file path \"%s\"", config);
+    if (GetFileAttributesA(config) == FILE_ATTRIBUTE_DIRECTORY ||
+        GetFileAttributesA(config) == INVALID_FILE_ATTRIBUTES) {
+        fprintf(stderr, "Invalid file path \"%s\"", config);
         return;
     }
 
