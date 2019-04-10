@@ -12,9 +12,44 @@
 
 
 
+// Function Prototypes
+void c_new(char *source, char *docs);
+void c_regen(char *config);
+
+
 #define COMMAND_NUM 2
 const static char *command_names[] = {"new",
-                                "regen",};
+                                      "regen",};
+
+void parse_arguments(int argc, char** argv) {
+    // Just return if there is no argument supplied
+    if (argc < 2) {
+        return;
+    }
+
+    // First is the basic check to see if the argv[0] is a valid command name
+    if (!string_in_strings(argv[1], command_names, COMMAND_NUM)) {
+        printf("Invalid command \"%s\"", argv[1]);
+        return;
+    }
+
+    /* new */
+    if (string_cmp(argv[1], command_names[0])) {
+        if (argc != 4) {
+            printf("Incorrect number of arguments");
+            return;
+        }
+        c_new(argv[2], argv[3]);
+
+    /* regen */
+    } else if (string_cmp(argv[1], command_names[1])) {
+        if (argc != 3) {
+            printf("Incorrect number of arguments");
+            return;
+        }
+        c_regen(argv[2]);
+    }
+}
 
 /**
  * Creates a config file based on the two arguments
@@ -87,21 +122,11 @@ void c_regen(char *config) {
         printf("Invalid file path \"%s\"", config);
         return;
     }
-#endif
 
-    // just read the file for now
-    FILE *f = fopen(config, "r");
-    int a = 0;
-    char str[MAX_BUFSIZE_MED];
-    while ((a = fscanf(f, "%s", str)) != EOF) {
-        printf("%s\n", str);
-    }
-
-    printf("\n");
-
-    // A check to see if load_html works
     char template[MAX_BUFSIZE_MED];
     GetModuleFileNameA(NULL, template, MAX_BUFSIZE_MED);
+#endif
+
 
     // Strip the exe name away so we can use the filepath to access
     int strlen = string_len(template);
@@ -113,46 +138,7 @@ void c_regen(char *config) {
     *(template + slash_pos) = '\0';
     sprintf(template, "%s\\resources\\template.html", template);
 
-    printf("%s", template);
-    printf("\n\n\n");
-
     struct HtmlBuffer *buf = load_html(template);
-    shift_pointers_right((void **) buf->buf, buf->y_len_true, 1, 7);
-    *(buf->buf + 7) = calloc(buf->x_len, sizeof(char));
-    str_cpy("\t\t<p>This line was entered by the program!<\\p>\n", *(buf->buf + 7));
-
-    // @NOTE : Just a quick print of what we loaded
-    for (int i = 0; i < buf->y_len; i++)
-        printf("%s", *(buf->buf + i));
 
 }
 
-void parse_arguments(int argc, char** argv) {
-    // Just return if there is no argument supplied
-    if (argc < 2) {
-        return;
-    }
-
-    // First is the basic check to see if the argv[0] is a valid command name
-    if (!string_in_strings(argv[1], command_names, COMMAND_NUM)) {
-        printf("Invalid command \"%s\"", argv[1]);
-        return;
-    }
-
-    /* new */
-    if (string_cmp(argv[1], command_names[0])) {
-        if (argc != 4) {
-            printf("Incorrect number of arguments");
-            return;
-        }
-        c_new(argv[2], argv[3]);
-
-    /* regen */
-    } else if (string_cmp(argv[1], command_names[1])) {
-        if (argc != 3) {
-            printf("Incorrect number of arguments");
-            return;
-        }
-        c_regen(argv[2]);
-    }
-}
