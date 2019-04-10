@@ -30,6 +30,8 @@ int string_cmp(const char *a, const char *b);
 int string_cmp2(const char *a, const char *b, int len);
 int string_in_strings(const char *str, const char **strs, int len);
 void str_cpy(const char *src, char* dest);
+void str_cpy2(const char *src, char* dest, int len);
+int str_len_to_ch(const char *str, char ch);
 unsigned char is_digit(wchar_t ch);
 unsigned char is_alpha(wchar_t ch);
 unsigned char is_special_ch(wchar_t ch);

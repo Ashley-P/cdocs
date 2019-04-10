@@ -6,7 +6,7 @@
 #endif
 
 #include <stdio.h>
-#include "defs.h"
+#include "args.h"
 #include "html.h"
 #include "utils.h"
 
@@ -15,6 +15,7 @@
 // Function Prototypes
 void c_new(char *source, char *docs);
 void c_regen(char *config);
+void setup_docgen(char *config, struct DocGen *docgen);
 
 
 #define COMMAND_NUM 2
@@ -139,6 +140,9 @@ void c_regen(char *config) {
     *(template + slash_pos) = '\0';
     sprintf(template, "%s\\resources\\template.html", template);
 
+    // Setting up DocGen
+    struct DocGen *docgen = malloc(sizeof(struct DocGen));
+    setup_docgen(config, docgen);
 
     // Loading the template for pre-editing before generating the documents
     struct HtmlBuffer *buf = load_html(template);
@@ -147,3 +151,55 @@ void c_regen(char *config) {
     printf("Valid!");
 }
 
+char *reverse_docgenopt_enum(enum DocGenOpt a) {
+    switch (a) {
+        case DG_INVALID:   return "DG_INVALID";
+        case DG_EQUALS:    return "DG_EQUALS";
+        case DG_ADDEQUALS: return "DG_ADDEQUALS";
+    }
+
+    return "";
+}
+
+/**
+ *  Sets up the docgen struct
+ */
+void setup_docgen(char *config, struct DocGen *docgen) {
+    FILE *f = fopen(config, "r");
+
+    char read[MAX_BUFSIZE_MED];
+    char cfg[MAX_BUFSIZE_MED];
+    char opt[MAX_BUFSIZE_MED];
+    enum DocGenOpt dgo;
+    int a;
+
+    while ((a = fscanf(f, "%s", read)) != EOF) {
+        printf("%s\n", read);
+        int x = str_len_to_ch(read, '+');
+        int y = str_len_to_ch(read, '=');
+
+        int len = (x < y) ? x : y;
+
+        str_cpy2(read, cfg, len);
+
+        // Checking operators
+        if (*(read + len) == '+' && *(read + len + 1) == '=') {
+            dgo = DG_ADDEQUALS;
+            str_cpy(read + len + 2, opt);
+
+        } else if (*(read + len) == '=') {
+            dgo = DG_EQUALS;
+            str_cpy(read + len + 1, opt);
+
+        } else {
+            fprintf(stderr, "Invalid string \"%s\"", read);
+            exit(0);
+        }
+
+
+            
+
+    }
+
+    fclose(f);
+};

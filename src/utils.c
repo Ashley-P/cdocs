@@ -254,8 +254,30 @@ int string_in_strings(const char *str, const char **strs, int len) {
 }
 
 void str_cpy(const char *src, char* dest) {
-    for (int i = 0; *(src + i) != '\0'; i++)
+    int i;
+    for (i = 0; *(src + i) != '\0'; i++)
         *(dest + i) = *(src + i);
+
+    *(dest + i) = '\0';
+}
+
+void str_cpy2(const char *src, char* dest, int len) {
+    int i;
+    for (i = 0; *(src + i) != '\0' && i < len; i++)
+        *(dest + i) = *(src + i);
+
+    *(dest + i) = '\0';
+}
+
+/**
+ * Measures the length of the string upto the character or the end of the string
+ */
+int str_len_to_ch(const char *str, char ch) {
+    int a = 0;
+    while (*(str + a) != ch && *(str + a) != '\0')
+        a++;
+
+    return a;
 }
 
 
