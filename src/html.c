@@ -41,10 +41,5 @@ struct HtmlBuffer *load_html(char *fn) {
         }
     }
 
-    // @NOTE : Just a quick print of what we loaded
-    y_pos = 0;
-    for (int i = 0; i < buf->y_len; i++)
-        printf("%s", *(buf->buf + i));
-
     return buf;
 }

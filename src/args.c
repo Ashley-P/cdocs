@@ -115,7 +115,16 @@ void c_regen(char *config) {
 
     printf("%s", template);
     printf("\n\n\n");
+
     struct HtmlBuffer *buf = load_html(template);
+    shift_pointers_right((void **) buf->buf, buf->y_len_true, 1, 7);
+    *(buf->buf + 7) = calloc(buf->x_len, sizeof(char));
+    str_cpy("\t\t<p>This line was entered by the program!<\\p>\n", *(buf->buf + 7));
+
+    // @NOTE : Just a quick print of what we loaded
+    for (int i = 0; i < buf->y_len; i++)
+        printf("%s", *(buf->buf + i));
+
 }
 
 void parse_arguments(int argc, char** argv) {
