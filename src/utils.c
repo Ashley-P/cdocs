@@ -233,11 +233,16 @@ int string_cmp(const char *a, const char *b) {
 /**
  * Compares a string with a list of strings
  */
-int string_in_strings(char *str, char **strs, int len) {
+int string_in_strings(const char *str, const char **strs, int len) {
     for (int i = 0; i < len; i++)
         if (string_cmp(str, *(strs + i))) return 1;
 
     return 0;
+}
+
+void str_cpy(const char *src, char* dest) {
+    for (int i = 0; *(src + i) != '\0'; i++)
+        *(dest + i) = *(src + i);
 }
 
 

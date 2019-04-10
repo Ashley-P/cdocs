@@ -7,12 +7,13 @@
 
 #include <stdio.h>
 #include "defs.h"
+#include "html.h"
 #include "utils.h"
 
 
 
 #define COMMAND_NUM 2
-static char *command_names[] = {"new",
+const static char *command_names[] = {"new",
                                 "regen",};
 
 /**
@@ -95,6 +96,26 @@ void c_regen(char *config) {
     while ((a = fscanf(f, "%s", str)) != EOF) {
         printf("%s\n", str);
     }
+
+    printf("\n");
+
+    // A check to see if load_html works
+    char template[MAX_BUFSIZE_MED];
+    GetModuleFileNameA(NULL, template, MAX_BUFSIZE_MED);
+
+    // Strip the exe name away so we can use the filepath to access
+    int strlen = string_len(template);
+    int slash_pos = strlen;
+
+    while (*(template + slash_pos) != '\\')
+        slash_pos--;
+
+    *(template + slash_pos) = '\0';
+    sprintf(template, "%s\\resources\\template.html", template);
+
+    printf("%s", template);
+    printf("\n\n\n");
+    struct HtmlBuffer *buf = load_html(template);
 }
 
 void parse_arguments(int argc, char** argv) {
