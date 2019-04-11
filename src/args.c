@@ -60,11 +60,25 @@ void parse_arguments(int argc, char** argv) {
  */
 void c_new(char *source, char *docs) {
 #ifdef _WIN32
+    // @TODO: Check if the path is relative or absolute
     // Convert both directory names to the full path
-    char ext_path[MAX_BUFSIZE_MED]; 
-    GetCurrentDirectory(MAX_BUFSIZE_MED, ext_path);
+    char tmp1[MAX_BUFSIZE_MED];
+    char tmp2[MAX_BUFSIZE_MED];
+    GetCurrentDirectory(MAX_BUFSIZE_MED, tmp1);
+    GetCurrentDirectory(MAX_BUFSIZE_MED, tmp2);
 
-    printf("%s\n", TEST);
+    if (*(source) == '.')
+        string_cat(source + 1, tmp1, string_len(source) - 1, MAX_BUFSIZE_MED);
+    else
+        string_cat(source, tmp1, string_len(source), MAX_BUFSIZE_MED);
+
+    if (*(docs) == '.')
+        string_cat(docs + 1, tmp2, string_len(docs) - 1, MAX_BUFSIZE_MED);
+    else
+        string_cat(docs, tmp2, string_len(docs), MAX_BUFSIZE_MED);
+
+    str_cpy(tmp1, source);
+    str_cpy(tmp2, docs);
 
     // Check both directory names
     if (GetFileAttributesA(source) == INVALID_FILE_ATTRIBUTES ||

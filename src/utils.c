@@ -280,6 +280,42 @@ int str_len_to_ch(const char *str, char ch) {
     return a;
 }
 
+void string_cat(const char *src, char *dest, size_t src_sz, size_t dest_sz) {
+    // Calculate size of string using string_len
+    int src_len = string_len(src);
+    int dest_len = string_len(dest);
+    int i;
+
+    for (i = 0; i < src_sz && i + dest_len < dest_sz && i < src_len; i++) {
+        *(dest + i + dest_len) = *(src + i);
+    }
+
+    *(dest + i + dest_len) = '\0';
+}
+
+void shift_chars_right(char *str, size_t sz, int shift_len, int shift_pos) {
+    for (int i = sz; i >= shift_pos; i--) {
+        if (i + shift_len >= sz) continue;
+        else *(str + i + shift_len) = *(str + i);
+    }
+    *(str + shift_pos) = '\0';
+
+    // Null Terminate the string
+    *(str + sz - 1) = L'\0';
+}
+
+void shift_chars_left(char *str, size_t sz, int shift_len, int shift_pos) {
+    for (int i = shift_pos; i <= sz; i++) {
+        //if (i + shift_len >= sz) continue;
+        if (i - shift_len < 0) continue;
+        else *(str + i - shift_len) = *(str + i);
+    }
+
+    for (int i = 0; i < shift_len; i++) {
+        *(str + sz - 1 - i) = '\0';
+    }
+
+}
 
 unsigned char is_digit(wchar_t ch) {
     if (ch >= L'0' && ch <= L'9') return 1;
