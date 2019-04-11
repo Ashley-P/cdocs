@@ -59,8 +59,14 @@ void parse_arguments(int argc, char** argv) {
  * @NOTE : The config file is placed in the docs directory
  */
 void c_new(char *source, char *docs) {
-    // Check both directory names
 #ifdef _WIN32
+    // Convert both directory names to the full path
+    char ext_path[MAX_BUFSIZE_MED]; 
+    GetCurrentDirectory(MAX_BUFSIZE_MED, ext_path);
+
+    printf("%s\n", TEST);
+
+    // Check both directory names
     if (GetFileAttributesA(source) == INVALID_FILE_ATTRIBUTES ||
         !(GetFileAttributesA(source) & FILE_ATTRIBUTE_DIRECTORY)) {
         fprintf(stderr, "Invalid directory name \"%s\"", source);
@@ -154,8 +160,8 @@ void c_regen(char *config) {
 char *reverse_docgenopt_enum(enum DocGenOpt a) {
     switch (a) {
         case DG_INVALID:   return "DG_INVALID";
-        case DG_EQUALS:    return "DG_EQUALS";
-        case DG_ADDEQUALS: return "DG_ADDEQUALS";
+        case DG_EQUALS:    return "=";
+        case DG_ADDEQUALS: return "+=";
     }
 
     return "";
@@ -174,7 +180,6 @@ void setup_docgen(char *config, struct DocGen *docgen) {
     int a;
 
     while ((a = fscanf(f, "%s", read)) != EOF) {
-        printf("%s\n", read);
         int x = str_len_to_ch(read, '+');
         int y = str_len_to_ch(read, '=');
 
@@ -196,10 +201,30 @@ void setup_docgen(char *config, struct DocGen *docgen) {
             exit(0);
         }
 
+        // Filling out the struct
+        if (string_cmp(cfg, "SourceDirectory")) {
+            if (dgo != DG_EQUALS) {
+                fprintf(stderr, "Incorrect Operator, expected \"=\" got \"%s\"\n",
+                        reverse_docgenopt_enum(dgo));
+            } else 
+                str_cpy(opt, docgen->src_dir);
 
-            
-
+        } else if (string_cmp(cfg, "DocsDirectory")) {
+            if (dgo != DG_EQUALS) {
+                fprintf(stderr, "Incorrect Operator, expected \"=\" got \"%s\"\n",
+                        reverse_docgenopt_enum(dgo));
+            } else 
+                str_cpy(opt, docgen->doc_dir);
+        }
     }
 
+    printf("%s\n", docgen->src_dir);
+    printf("%s\n", docgen->doc_dir);
+
+    // Check that the mandatory members are filled
+    if (*(docgen->src_dir) == '\0') {
+        fprintf(stderr, "Error: No SourceDirectory variable in \"%s\"", config);
+        exit(0);
+    }
     fclose(f);
 };
