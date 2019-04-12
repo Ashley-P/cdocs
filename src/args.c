@@ -166,9 +166,9 @@ void c_regen(char *config) {
     setup_docgen(config, docgen);
 
     // Loading the template for pre-editing before generating the documents
-    struct HtmlBuffer *buf = load_html(template);
-    struct TemplatePositions *template_positions = malloc(sizeof(struct TemplatePositions));
-    recheck_template_positions(buf, template_positions);
+    struct HtmlBuffer *hb = load_html(template);
+    struct TemplatePositions *tp = malloc(sizeof(struct TemplatePositions));
+    recheck_template_positions(hb, tp);
 
     // @TEST: Testing to see if I can grab filenames for future use
     // Scanning the files
@@ -178,6 +178,8 @@ void c_regen(char *config) {
     for (int i = 0; i < db->y_len; i++)
         printf("%s\n", *(db->buf + i));
 
+    // Gen the template
+    gen_template(hb, tp, db, docgen->doc_dir);
     printf("Valid!");
 }
 

@@ -5,6 +5,10 @@
 #include "utils.h"
 
 
+// Function prototypes
+static inline void add_hyperlink(struct HtmlBuffer *hb, char *docs, char *name, int pos);
+static inline char *get_filename(char *fpath);
+
 
 // @TODO: Have the function accept an argument for y_len
 static inline struct HtmlBuffer *create_html_buffer() {
@@ -20,11 +24,11 @@ static inline struct HtmlBuffer *create_html_buffer() {
     return ptr;
 }
 
-static inline void delete_html_buffer(struct HtmlBuffer *buf) {
+static inline void delete_html_buffer(struct HtmlBuffer *hb) {
     for (int i = 0; i < MAX_BUFSIZE_MED; i++)
-        free(*(buf->buf + i));
-    free(buf->buf);
-    free(buf);
+        free(*(hb->buf + i));
+    free(hb->buf);
+    free(hb);
 }
 
 /**
@@ -63,10 +67,35 @@ struct HtmlBuffer *load_html(char *fn) {
     return buf;
 }
 
-void save_html(struct HtmlBuffer buf, char *fn) {}
+void save_html(struct HtmlBuffer *hb, char *fn) {
+    FILE *f = fopen(fn, "w");
+    if (!f) {
+        fprintf(stderr, "\nError in save_html: File does not exist");
+        return;
+    }
+
+    int x_pos = 0;
+
+    for (int i = 0; i < hb->y_len; i++) {
+        x_pos = 0;
+        while (*(*(hb->buf + i) + x_pos) != '\0') {
+            fputc(*(*(hb->buf + i) + x_pos), f);
+            x_pos++;
+        }
+        /*
+        if (*(*(hb->buf + i) + x_pos) == '\n') {
+            fputc('\n', f);
+            x_pos = 0;
+        }
+        */
+
+    }
+
+    fclose(f);
+}
 
 
-// Returns a pointer that is a the first non-whitespace character in the string
+// Returns a pointer that is at the first non-whitespace character in the string
 static inline char *consume_spaces(char *str) {
     char *tmp = str;
     while (*tmp == ' ')
@@ -79,11 +108,11 @@ static inline char *consume_spaces(char *str) {
  * Finds the html comment <!-- CDOCS:<comment> --> and returns the line number
  * 0 on failure
  */
-unsigned short find_comment(struct HtmlBuffer *buf, char *comment) {
+unsigned short find_comment(const struct HtmlBuffer *hb, char *comment) {
     // For each line we consume the spaces and check if the first letters of the string match a comment
     char *c;
-    for (int y = 0; y < buf->y_len; y++) {
-        c = consume_spaces(*(buf->buf + y));
+    for (int y = 0; y < hb->y_len; y++) {
+        c = consume_spaces(*(hb->buf + y));
         if (string_cmp2(c, comment, string_len(comment) - 1))
             return y;
     }
@@ -96,16 +125,16 @@ unsigned short find_comment(struct HtmlBuffer *buf, char *comment) {
  * returns 0 on failure and 1 on success
  * @TODO: Proper error checking later
  */
-int recheck_template_positions(struct HtmlBuffer *buf, struct TemplatePositions *tp) {
-    tp->topnav  = find_comment(buf, "<!-- CDOCS:TOPNAV -->");
-    tp->sidenav = find_comment(buf, "<!-- CDOCS:SIDENAV -->");
-    tp->content = find_comment(buf, "<!-- CDOCS:CONTENT -->");
+int recheck_template_positions(const struct HtmlBuffer *hb, struct TemplatePositions *tp) {
+    tp->topnav  = find_comment(hb, "<!-- CDOCS:TOPNAV -->");
+    tp->sidenav = find_comment(hb, "<!-- CDOCS:SIDENAV -->");
+    tp->content = find_comment(hb, "<!-- CDOCS:CONTENT -->");
 
-    tp->sidenav_files     = find_comment(buf, "<!-- CDOCS:SIDENAV:FILES -->");
-    tp->sidenav_functions = find_comment(buf, "<!-- CDOCS:SIDENAV:FUNCTIONS -->");
-    tp->sidenav_structs   = find_comment(buf, "<!-- CDOCS:SIDENAV:STRUCTS -->");
-    tp->sidenav_defines   = find_comment(buf, "<!-- CDOCS:SIDENAV:DEFINES -->");
-    tp->sidenav_enums     = find_comment(buf, "<!-- CDOCS:SIDENAV:ENUMS -->");
+    tp->sidenav_files     = find_comment(hb, "<!-- CDOCS:SIDENAV:FILES -->");
+    tp->sidenav_functions = find_comment(hb, "<!-- CDOCS:SIDENAV:FUNCTIONS -->");
+    tp->sidenav_structs   = find_comment(hb, "<!-- CDOCS:SIDENAV:STRUCTS -->");
+    tp->sidenav_defines   = find_comment(hb, "<!-- CDOCS:SIDENAV:DEFINES -->");
+    tp->sidenav_enums     = find_comment(hb, "<!-- CDOCS:SIDENAV:ENUMS -->");
 
     // @TODO: Better handling
     if (tp->topnav == 0 || tp->sidenav == 0 || tp->content == 0 || tp->sidenav_files == 0 ||
@@ -118,5 +147,54 @@ int recheck_template_positions(struct HtmlBuffer *buf, struct TemplatePositions 
     return 1;
 }
 
-void gen_template(struct HtmlBuffer *buf, struct TemplatePositions *tp) {
+/**
+ * This edits the loaded template and customizes it to fit the source files
+ * @TODO: Proper indenting
+ */
+void gen_template(struct HtmlBuffer *hb, struct TemplatePositions *tp, struct DirectoryBuffer *db, char *docs) {
+    // Generating the file section in sidenav
+    // @TODO: We need to match headers with the source files so we can combine their pages
+    // Loop over the directory buffer
+    for (int i = 0; i < db->y_len; i++) {
+        char *fname = get_filename(*(db->buf + i));
+        add_hyperlink(hb, docs, fname, tp->sidenav_files + 1);
+        free(fname);
+    }
+
+    // Save the custom template to the docs folder
+    char fn[MAX_BUFSIZE_MED];
+    str_cpy(docs, fn);
+    const char path[] = "templates\\template.html";
+    string_cat(path, fn, string_len(path), MAX_BUFSIZE_MED);
+    save_html(hb, fn);
 }
+
+/**
+ * Creates a hyper link at the line provided in the buffer
+ */
+static inline void add_hyperlink(struct HtmlBuffer *hb, char *docs, char *name, int pos) {
+    shift_pointers_right((void **) hb->buf, MAX_BUFSIZE_MED, 1, pos);
+    *(hb->buf + pos) = calloc(MAX_BUFSIZE_SMALL, sizeof(char));
+
+    // Construct the string
+    char str[MAX_BUFSIZE_SMALL];
+    char html[MAX_BUFSIZE_SMALL];
+    str_cpy(docs, html);
+    string_cat(name, html, string_len(name), MAX_BUFSIZE_MED);
+    sprintf(str, "<a href=\"%s.html\">%s</a>\n", html, name);
+    str_cpy(str, *(hb->buf + pos));
+}
+
+/**
+ * Strips the rest of the filepath and leaves the file name
+ */
+static inline char *get_filename(char *fpath) {
+    char *fname = calloc(MAX_BUFSIZE_MED, sizeof(char));
+    int len = string_len(fpath);
+    // Work backwards from the string and stop at the first slash
+    while (*(fpath + len) != '\\' && *(fpath + len) != '/') len--;
+
+    str_cpy(fpath + len + 1, fname);
+    return fname;
+}
+

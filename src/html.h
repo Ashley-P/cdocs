@@ -16,8 +16,9 @@ struct TemplatePositions {
 
 // Extern Functions
 struct HtmlBuffer *load_html(char *fn);
-void save_html(struct HtmlBuffer buf, char *fn);
-unsigned short find_comment(struct HtmlBuffer *buf, char *comment);
-int recheck_template_positions(struct HtmlBuffer *buf, struct TemplatePositions *tp);
+void save_html(struct HtmlBuffer *hb, char *fn);
+unsigned short find_comment(const struct HtmlBuffer *hbf, char *comment);
+int recheck_template_positions(const struct HtmlBuffer *hb, struct TemplatePositions *tp);
+void gen_template(struct HtmlBuffer *hb, struct TemplatePositions *tp, struct DirectoryBuffer *db, char *docs);
 
 #endif
