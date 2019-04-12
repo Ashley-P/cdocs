@@ -173,6 +173,8 @@ void c_regen(char *config) {
     // @TEST: Testing to see if I can grab filenames for future use
     // Scanning the files
     struct DirectoryBuffer *db = scan_directory(docgen->src_dir);
+    if (!db) return;
+
     for (int i = 0; i < db->y_len; i++)
         printf("%s\n", *(db->buf + i));
 
