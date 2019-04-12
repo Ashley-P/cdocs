@@ -7,6 +7,7 @@
 
 #include <stdio.h>
 #include "args.h"
+#include "docs.h"
 #include "html.h"
 #include "utils.h"
 
@@ -169,6 +170,12 @@ void c_regen(char *config) {
     struct TemplatePositions *template_positions = malloc(sizeof(struct TemplatePositions));
     recheck_template_positions(buf, template_positions);
 
+    // @TEST: Testing to see if I can grab filenames for future use
+    // Scanning the files
+    struct DirectoryBuffer *db = scan_directory(docgen->src_dir);
+    for (int i = 0; i < db->y_len; i++)
+        printf("%s\n", *(db->buf + i));
+
     printf("Valid!");
 }
 
@@ -241,6 +248,10 @@ void setup_docgen(char *config, struct DocGen *docgen) {
     if (*(docgen->src_dir) == '\0') {
         fprintf(stderr, "Error: No SourceDirectory variable in \"%s\"", config);
         exit(0);
+    } else if (*(docgen->doc_dir) == '\0') {
+        fprintf(stderr, "Error: No DocsDirectory variable in \"%s\"", config);
+        exit(0);
     }
+
     fclose(f);
 };

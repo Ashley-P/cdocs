@@ -6,6 +6,7 @@
 
 
 
+// @TODO: Have the function accept an argument for y_len
 static inline struct HtmlBuffer *create_html_buffer() {
     struct HtmlBuffer *ptr = malloc(sizeof(struct HtmlBuffer));
     ptr->buf               = malloc(sizeof(char *) * MAX_BUFSIZE_MED);
