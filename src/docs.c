@@ -40,8 +40,6 @@ static inline void delete_directory_buffer(struct DirectoryBuffer *db) {
  * @TODO: Offload the actual directory scanning so I can call it recursively
  */
 struct DirectoryBuffer *scan_directory(char *dir) {
-    printf("%s\n", dir);
-
     // Creating struct
     struct DirectoryBuffer *db = create_directory_buffer();
 
