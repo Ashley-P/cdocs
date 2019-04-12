@@ -53,6 +53,7 @@ struct DirectoryBuffer *scan_directory(char *dir) {
     string_cat("*.c", srcfiles, 3, MAX_BUFSIZE_MED);
     string_cat("*.h", hdrfiles, 3, MAX_BUFSIZE_MED);
 
+#if _WIN32
     WIN32_FIND_DATAA *file_info = malloc(sizeof(WIN32_FIND_DATAA));
 
     // Getting first file and the handle for searching
@@ -87,5 +88,7 @@ struct DirectoryBuffer *scan_directory(char *dir) {
 
     FindClose(src_srch);
     FindClose(hdr_srch);
+#endif
+
     return db;
 }
