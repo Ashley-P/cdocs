@@ -178,8 +178,6 @@ void c_regen(char *config) {
     str_cpy(docgen->doc_dir, css_path);
     string_cat("templates\\dropdown.js", js_path, string_len("templates\\dropdown.js"), MAX_BUFSIZE_MED);
     string_cat("templates\\styles.css", css_path, string_len("templates\\styles.css"), MAX_BUFSIZE_MED);
-    printf("%s\n", js_path);
-    printf("%s\n", css_path);
 
 #ifdef _WIN32
     CopyFile(js,  js_path, 0);
@@ -195,9 +193,6 @@ void c_regen(char *config) {
     // Scanning the files
     struct DirectoryBuffer *db = scan_directory(docgen->src_dir);
     if (!db) return;
-
-    for (int i = 0; i < db->y_len; i++)
-        printf("%s\n", *(db->buf + i));
 
     // Gen the template
     gen_template(hb, tp, db, docgen->doc_dir);
