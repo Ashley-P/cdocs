@@ -63,44 +63,42 @@ void c_new(char *source, char *docs) {
 #ifdef _WIN32
     // @TODO: Check if the path is relative or absolute
     // Convert both directory names to the full path
-    char tmp1[MAX_BUFSIZE_MED];
-    char tmp2[MAX_BUFSIZE_MED];
-    GetCurrentDirectory(MAX_BUFSIZE_MED, tmp1);
-    GetCurrentDirectory(MAX_BUFSIZE_MED, tmp2);
+    char cur_dir[MAX_BUFSIZE_MED];
+    char new_src[MAX_BUFSIZE_MED];
+    char new_doc[MAX_BUFSIZE_MED];
+    GetCurrentDirectory(MAX_BUFSIZE_MED, cur_dir);
 
     if (*(source) == '.')
-        string_cat(source + 1, tmp1, string_len(source) - 1, MAX_BUFSIZE_MED);
+        sprintf(new_src, "%s%s", cur_dir, source + 1);
     else
-        string_cat(source, tmp1, string_len(source), MAX_BUFSIZE_MED);
+        sprintf(new_src, "%s%s", cur_dir, source);
 
     if (*(docs) == '.')
-        string_cat(docs + 1, tmp2, string_len(docs) - 1, MAX_BUFSIZE_MED);
+        sprintf(new_doc, "%s%s", cur_dir, docs + 1);
     else
-        string_cat(docs, tmp2, string_len(docs), MAX_BUFSIZE_MED);
+        sprintf(new_doc, "%s%s", cur_dir, docs);
 
-    str_cpy(tmp1, source);
-    str_cpy(tmp2, docs);
 
     // Check both directory names
-    if (GetFileAttributesA(source) == INVALID_FILE_ATTRIBUTES ||
-        !(GetFileAttributesA(source) & FILE_ATTRIBUTE_DIRECTORY)) {
-        fprintf(stderr, "Invalid directory name \"%s\"", source);
+    if (GetFileAttributesA(new_src) == INVALID_FILE_ATTRIBUTES ||
+        !(GetFileAttributesA(new_src) & FILE_ATTRIBUTE_DIRECTORY)) {
+        fprintf(stderr, "Invalid directory name \"%s\"", new_src);
         return;
-    } else if (GetFileAttributesA(docs) == INVALID_FILE_ATTRIBUTES ||
-        !(GetFileAttributesA(docs) & FILE_ATTRIBUTE_DIRECTORY)) {
-        fprintf(stderr, "Invalid directory name \"%s\"", docs);
+    } else if (GetFileAttributesA(new_doc) == INVALID_FILE_ATTRIBUTES ||
+        !(GetFileAttributesA(new_doc) & FILE_ATTRIBUTE_DIRECTORY)) {
+        fprintf(stderr, "Invalid directory name \"%s\"", new_doc);
         return;
     }
 #endif
 
     // Create a config file in docs with both filenames in
     char path[MAX_BUFSIZE_MED];
-    sprintf(path, "%s/cdocs.cfg", docs);
+    sprintf(path, "%s/cdocs.cfg", new_doc);
 
 #ifdef _WIN32
     // Checking if the file exists
     char input[1];
-    if (!(GetFileAttributesA(source) == INVALID_FILE_ATTRIBUTES)) {
+    if (!(GetFileAttributesA(new_src) == INVALID_FILE_ATTRIBUTES)) {
         do {
             printf("File \"%s\" already exists, would you like to overwrite? \n[Y]es [N]o\n", path);
             scanf(" %c", input);
@@ -114,13 +112,13 @@ void c_new(char *source, char *docs) {
     char path2[MAX_BUFSIZE_MED];
 
     // html directory
-    sprintf(path2, "%s/html", docs);
+    sprintf(path2, "%s/html", new_doc);
     if (GetFileAttributesA(path2) == INVALID_FILE_ATTRIBUTES) {
         _mkdir(path2);
     }
 
     // templates directory
-    sprintf(path2, "%s/templates", docs);
+    sprintf(path2, "%s/templates", new_doc);
     if (GetFileAttributesA(path2) == INVALID_FILE_ATTRIBUTES) {
         _mkdir(path2);
     }
@@ -128,8 +126,8 @@ void c_new(char *source, char *docs) {
 #endif
 
     FILE *f = fopen(path, "w+");
-    fprintf(f, "SourceDirectory=%s\n", source);
-    fprintf(f, "DocsDirectory=%s\n", docs);
+    fprintf(f, "SourceDirectory=%s\n", new_src);
+    fprintf(f, "DocsDirectory=%s\n", new_doc);
     fclose(f);
     printf("\nConfig file created at \"%s\"", path);
 }
@@ -174,10 +172,8 @@ void c_regen(char *config) {
     // Copying the non-edited files over to the docs folder
     char js_path[MAX_BUFSIZE_MED];
     char css_path[MAX_BUFSIZE_MED];
-    str_cpy(docgen->doc_dir, js_path);
-    str_cpy(docgen->doc_dir, css_path);
-    string_cat("templates\\dropdown.js", js_path, string_len("templates\\dropdown.js"), MAX_BUFSIZE_MED);
-    string_cat("templates\\styles.css", css_path, string_len("templates\\styles.css"), MAX_BUFSIZE_MED);
+    sprintf(js_path, "%stemplates\\dropdown.js", docgen->doc_dir);
+    sprintf(css_path, "%stemplates\\styles.css", docgen->doc_dir);
 
 #ifdef _WIN32
     CopyFile(js,  js_path, 0);

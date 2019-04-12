@@ -47,11 +47,8 @@ struct DirectoryBuffer *scan_directory(char *dir) {
     char srcfiles[MAX_BUFSIZE_MED];
     char hdrfiles[MAX_BUFSIZE_MED];
 
-    str_cpy(dir, srcfiles);
-    str_cpy(dir, hdrfiles);
-
-    string_cat("*.c", srcfiles, 3, MAX_BUFSIZE_MED);
-    string_cat("*.h", hdrfiles, 3, MAX_BUFSIZE_MED);
+    sprintf(srcfiles, "%s*.c", dir);
+    sprintf(hdrfiles, "%s*.h", dir);
 
 #if _WIN32
     WIN32_FIND_DATAA *file_info = malloc(sizeof(WIN32_FIND_DATAA));
@@ -66,9 +63,7 @@ struct DirectoryBuffer *scan_directory(char *dir) {
     }
 
     do {
-        str_cpy(dir, *(db->buf + db->y_len));
-        string_cat(file_info->cFileName, *(db->buf + db->y_len),
-                string_len(file_info->cFileName), MAX_BUFSIZE_SMALL);
+        sprintf(*(db->buf + db->y_len), "%s%s", dir, file_info->cFileName);
         db->y_len++;
     } while (FindNextFileA(src_srch, file_info) != 0);
 
@@ -80,9 +75,7 @@ struct DirectoryBuffer *scan_directory(char *dir) {
     }
 
     do {
-        str_cpy(dir, *(db->buf + db->y_len));
-        string_cat(file_info->cFileName, *(db->buf + db->y_len),
-                string_len(file_info->cFileName), MAX_BUFSIZE_SMALL);
+        sprintf(*(db->buf + db->y_len), "%s%s", dir, file_info->cFileName);
         db->y_len++;
     } while (FindNextFileA(hdr_srch, file_info) != 0);
 

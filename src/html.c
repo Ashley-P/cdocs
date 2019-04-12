@@ -163,9 +163,7 @@ void gen_template(struct HtmlBuffer *hb, struct TemplatePositions *tp, struct Di
 
     // Save the custom template to the docs folder
     char fn[MAX_BUFSIZE_MED];
-    str_cpy(docs, fn);
-    const char path[] = "templates\\template.html";
-    string_cat(path, fn, string_len(path), MAX_BUFSIZE_MED);
+    sprintf(fn, "%stemplates\\template.html", docs);
     save_html(hb, fn);
 }
 
@@ -177,12 +175,7 @@ static inline void add_hyperlink(struct HtmlBuffer *hb, char *docs, char *name, 
     *(hb->buf + pos) = calloc(MAX_BUFSIZE_SMALL, sizeof(char));
 
     // Construct the string
-    char str[MAX_BUFSIZE_SMALL];
-    char html[MAX_BUFSIZE_SMALL];
-    str_cpy(docs, html);
-    string_cat(name, html, string_len(name), MAX_BUFSIZE_MED);
-    sprintf(str, "<a href=\"%s.html\">%s</a>\n", html, name);
-    str_cpy(str, *(hb->buf + pos));
+    sprintf(*(hb->buf + pos), "<a href=\"%s%s.html\">%s</a>\n", docs, name, name);
     hb->y_len++;
 }
 
