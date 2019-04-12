@@ -167,6 +167,7 @@ void c_regen(char *config) {
     // Loading the template for pre-editing before generating the documents
     struct HtmlBuffer *buf = load_html(template);
     struct TemplatePositions *template_positions = malloc(sizeof(struct TemplatePositions));
+    recheck_template_positions(buf, template_positions);
 
     printf("Valid!");
 }
@@ -232,8 +233,9 @@ void setup_docgen(char *config, struct DocGen *docgen) {
         }
     }
 
-    printf("%s\n", docgen->src_dir);
-    printf("%s\n", docgen->doc_dir);
+    // Testing stuff
+    //printf("%s\n", docgen->src_dir);
+    //printf("%s\n", docgen->doc_dir);
 
     // Check that the mandatory members are filled
     if (*(docgen->src_dir) == '\0') {

@@ -106,6 +106,7 @@ int recheck_template_positions(struct HtmlBuffer *buf, struct TemplatePositions 
     tp->sidenav_defines   = find_comment(buf, "<!-- CDOCS:SIDENAV:DEFINES -->");
     tp->sidenav_enums     = find_comment(buf, "<!-- CDOCS:SIDENAV:ENUMS -->");
 
+    // @TODO: Better handling
     if (tp->topnav == 0 || tp->sidenav == 0 || tp->content == 0 || tp->sidenav_files == 0 ||
         tp->sidenav_functions == 0 || tp->sidenav_structs == 0 || tp->sidenav_defines == 0 ||
         tp->sidenav_enums     == 0) {
