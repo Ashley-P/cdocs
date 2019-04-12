@@ -183,6 +183,7 @@ static inline void add_hyperlink(struct HtmlBuffer *hb, char *docs, char *name, 
     string_cat(name, html, string_len(name), MAX_BUFSIZE_MED);
     sprintf(str, "<a href=\"%s.html\">%s</a>\n", html, name);
     str_cpy(str, *(hb->buf + pos));
+    hb->y_len++;
 }
 
 /**

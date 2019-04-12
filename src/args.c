@@ -146,24 +146,45 @@ void c_regen(char *config) {
         return;
     }
 
-    char template[MAX_BUFSIZE_MED];
-    GetModuleFileNameA(NULL, template, MAX_BUFSIZE_MED);
+    char bin_dir[MAX_BUFSIZE_MED];
+    GetModuleFileNameA(NULL, bin_dir, MAX_BUFSIZE_MED);
 #endif
 
 
     // Strip the exe name away so we can use the filepath to access
-    int strlen = string_len(template);
+    int strlen = string_len(bin_dir);
     int slash_pos = strlen;
 
-    while (*(template + slash_pos) != '\\')
+    while (*(bin_dir + slash_pos) != '\\')
         slash_pos--;
 
-    *(template + slash_pos) = '\0';
-    sprintf(template, "%s\\resources\\template.html", template);
+    *(bin_dir + slash_pos) = '\0';
+    char template[MAX_BUFSIZE_MED];
+    char js[MAX_BUFSIZE_MED];
+    char css[MAX_BUFSIZE_MED];
+    sprintf(template, "%s\\resources\\template.html", bin_dir);
+    sprintf(js,       "%s\\resources\\dropdown.js",   bin_dir);
+    sprintf(css,      "%s\\resources\\styles.css",    bin_dir);
 
     // Setting up DocGen
     struct DocGen *docgen = malloc(sizeof(struct DocGen));
     setup_docgen(config, docgen);
+
+
+    // Copying the non-edited files over to the docs folder
+    char js_path[MAX_BUFSIZE_MED];
+    char css_path[MAX_BUFSIZE_MED];
+    str_cpy(docgen->doc_dir, js_path);
+    str_cpy(docgen->doc_dir, css_path);
+    string_cat("templates\\dropdown.js", js_path, string_len("templates\\dropdown.js"), MAX_BUFSIZE_MED);
+    string_cat("templates\\styles.css", css_path, string_len("templates\\styles.css"), MAX_BUFSIZE_MED);
+    printf("%s\n", js_path);
+    printf("%s\n", css_path);
+
+#ifdef _WIN32
+    CopyFile(js,  js_path, 0);
+    CopyFile(css, css_path, 0);
+#endif
 
     // Loading the template for pre-editing before generating the documents
     struct HtmlBuffer *hb = load_html(template);
