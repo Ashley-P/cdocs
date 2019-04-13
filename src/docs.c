@@ -55,6 +55,8 @@ struct DirectoryBuffer *scan_directory(char *dir) {
 
     // Getting first file and the handle for searching
     HANDLE src_srch = FindFirstFileA(srcfiles, file_info);
+    int files_found = 0;
+    printf("Files found %d!\r", files_found);
 
     if (src_srch == INVALID_HANDLE_VALUE) {
         fprintf(stderr, "Error in scan_directory: Invalid handle value");
@@ -65,6 +67,8 @@ struct DirectoryBuffer *scan_directory(char *dir) {
     do {
         sprintf(*(db->buf + db->y_len), "%s%s", dir, file_info->cFileName);
         db->y_len++;
+        files_found++;
+        printf("Files found %d!\r", files_found);
     } while (FindNextFileA(src_srch, file_info) != 0);
 
     HANDLE hdr_srch = FindFirstFileA(hdrfiles, file_info);
@@ -77,11 +81,31 @@ struct DirectoryBuffer *scan_directory(char *dir) {
     do {
         sprintf(*(db->buf + db->y_len), "%s%s", dir, file_info->cFileName);
         db->y_len++;
+        files_found++;
+        printf("Files found %d!\r", files_found);
     } while (FindNextFileA(hdr_srch, file_info) != 0);
 
+    printf("\n");
     FindClose(src_srch);
     FindClose(hdr_srch);
 #endif
 
     return db;
+}
+
+/**
+ * Scans the file and returns each function definition
+ * @NOTE:
+ * 0. Function prototypes are skipped
+ * 1. We assume that each function starts with no indent
+ */
+void scan_file_functions(char *fp) {
+    // We assume that fp is correct
+    FILE *f = fopen(fp, "r");
+    
+
+
+
+
+    fclose(f);
 }
