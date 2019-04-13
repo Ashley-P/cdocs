@@ -130,16 +130,17 @@ int recheck_template_positions(const struct HtmlBuffer *hb, struct TemplatePosit
     tp->sidenav = find_comment(hb, "<!-- CDOCS:SIDENAV -->");
     tp->content = find_comment(hb, "<!-- CDOCS:CONTENT -->");
 
-    tp->sidenav_files     = find_comment(hb, "<!-- CDOCS:SIDENAV:FILES -->");
+    tp->sidenav_header    = find_comment(hb, "<!-- CDOCS:SIDENAV:HEADER -->");
+    tp->sidenav_source    = find_comment(hb, "<!-- CDOCS:SIDENAV:SOURCE -->");
     tp->sidenav_functions = find_comment(hb, "<!-- CDOCS:SIDENAV:FUNCTIONS -->");
     tp->sidenav_structs   = find_comment(hb, "<!-- CDOCS:SIDENAV:STRUCTS -->");
     tp->sidenav_defines   = find_comment(hb, "<!-- CDOCS:SIDENAV:DEFINES -->");
     tp->sidenav_enums     = find_comment(hb, "<!-- CDOCS:SIDENAV:ENUMS -->");
 
     // @TODO: Better handling
-    if (tp->topnav == 0 || tp->sidenav == 0 || tp->content == 0 || tp->sidenav_files == 0 ||
-        tp->sidenav_functions == 0 || tp->sidenav_structs == 0 || tp->sidenav_defines == 0 ||
-        tp->sidenav_enums     == 0) {
+    if (tp->topnav == 0 || tp->sidenav == 0 || tp->content == 0 || tp->sidenav_header == 0 ||
+        tp->sidenav_source == 0 || tp->sidenav_functions == 0 || tp->sidenav_structs == 0 ||
+        tp->sidenav_defines == 0 || tp->sidenav_enums     == 0) {
         fprintf(stderr, "Couldn't find specific comment");
         return 0;
     }
@@ -155,9 +156,17 @@ void gen_template(struct HtmlBuffer *hb, struct TemplatePositions *tp, struct Di
     // Generating the file section in sidenav
     // @TODO: We need to match headers with the source files so we can combine their pages
     // Loop over the directory buffer
+    int len;
+    char *fname;
+
     for (int i = 0; i < db->y_len; i++) {
-        char *fname = get_filename(*(db->buf + i));
-        add_hyperlink(hb, docs, fname, tp->sidenav_files + 1);
+        fname = get_filename(*(db->buf + i));
+        // Check if the file is a header or a source file
+        len = string_len(fname);
+        if (*(fname + len - 1) == 'h')
+            add_hyperlink(hb, docs, fname, tp->sidenav_header + 1);
+        else if (*(fname + len - 1) == 'c')
+            add_hyperlink(hb, docs, fname, tp->sidenav_source + 1);
         free(fname);
     }
 
