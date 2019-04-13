@@ -21,7 +21,8 @@ void delete_node(struct Node *node) {
 
 void list_push_front(struct Node **head, struct Node *new_node) {
     new_node->next = *head;
-    (*head)->prev = new_node;
+    if (*head)
+        (*head)->prev = new_node;
     *head = new_node;
 }
 
