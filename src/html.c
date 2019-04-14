@@ -91,10 +91,49 @@ void gen_template(struct FileBuffer *fb, struct TemplatePositions *tp, struct Di
         free(fname);
     }
 
-    // @NOTE : HERE!
 
-    scan_file_functions(*db->buf);
+    // Recheck the template after every insertion
+    recheck_template_positions(fb, tp);
 
+    // Adding functions to the template
+    // @FIXME @TODO: Should probably refactor and put elsewhere
+    // TODO: Arrange the functions into alphabetical order
+    char func[MAX_BUFSIZE_MINI];
+    struct FileBuffer *functions;
+    int name_start;
+    int name_end;
+    // Resusing len
+    for (int k = 0; k < db->y_len; k++) {
+        // Scan each file
+        // Skip headers
+        if (*(*(db->buf + k) + string_len(*(db->buf + k))) == 'h')
+            continue;
+        functions = scan_file_functions(*(db->buf + k));
+
+        for (int i = 0; i < functions->y_len; i++) {
+            // Scan each line 
+            int len = string_len(*(functions->buf + i));
+            // @FIXME : Could be refactored
+            while (*(*(functions->buf + i) + len) != '(') {
+                len--;
+            }
+
+            // When we get to the opening parantheses we set name_end;
+            name_end = len;
+
+            while (*(*(functions->buf + i) + len) != ' ' &&
+                   *(*(functions->buf + i) + len) != '*') {
+                len--;
+            }
+            name_start = ++len;
+            str_cpy2(*(functions->buf + i) + name_start, func, name_end - name_start);
+
+            printf("%s\n", func);
+            add_hyperlink(fb, docs, func, tp->sidenav_functions + 1);
+        }
+
+        free(functions);
+    }
 
     // Save the custom template to the docs folder
     char fn[MAX_BUFSIZE_MED];

@@ -3,6 +3,6 @@
 
 // Extern Functions
 struct DirectoryBuffer *scan_directory(char *dir);
-void scan_file_functions(char *fp);
+struct FileBuffer *scan_file_functions(char *fp);
 
 #endif

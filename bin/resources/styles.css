@@ -36,7 +36,7 @@ body {
     background-color: #9D9D9D;
     height: 100%;
     left: 0;
-    overflow: hidden;
+    overflow-y: scroll;
     position: fixed;
     width: 250px;
     top: 60px;
@@ -49,7 +49,7 @@ body {
     color: #000000;
     display: block;
     float: left;
-    font-size: 22px;
+    font-size: 16px;
     padding: 10px 15px;
     text-align: left;
     text-decoration: none;

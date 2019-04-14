@@ -99,23 +99,43 @@ struct DirectoryBuffer *scan_directory(char *dir) {
  * @NOTE:
  * 0. Function prototypes are skipped
  * 1. We assume that each function starts with no indent
+ * 2. Functions have the opening brace on the same line
  */
-void scan_file_functions(char *fp) {
+struct FileBuffer *scan_file_functions(char *fp) {
     // We assume that fp is correct
     struct FileBuffer *fb = load_file(fp);
+    int a, b, c;
 
-    // In the first pass we take out any line that starts with a blank space
+    /**
+     * Cull the lines
+     * We assume that functions have no leading spaces
+     * Our culling assumes that functions have a '(' and ')' and '{'
+     */
     for (int i = 0; i < fb->y_len; i++) {
+        a = 0; b = 0; c = 0;
+
         if (**(fb->buf + i) == ' ' || **(fb->buf + i) == '\n') {
-            shift_pointers_left((void **) fb->buf, fb->y_len_true, 1, i + 1);
             // No mallocing the free space because it won't be used again
+            shift_pointers_left((void **) fb->buf, fb->y_len_true, 1, i + 1);
             fb->y_len--;
             i--;
-        }
-    }
+        } else {
+            for (int j = 0; j < string_len(*(fb->buf + i)); j++) {
+                if (*(*(fb->buf + i) + j) == '(') a = 1;
+                else if (*(*(fb->buf + i) + j) == ')') b = 1;
+                else if (*(*(fb->buf + i) + j) == '{') c = 1;
+            }
 
-    // @TEST
-    for (int i = 0; i < fb->y_len; i++) {
-        printf("%s", *(fb->buf + i));
+            if (!a || !b || !c) {
+                shift_pointers_left((void **) fb->buf, fb->y_len_true, 1, i + 1);
+                fb->y_len--;
+                i--;
+            }
+        }
+        // Print out the line we are keeping - no real reason to do this
+        //printf("%s", *(fb->buf + i));
+        //fflush(stdout);
     }
+    printf("\n");
+    return fb;
 }
