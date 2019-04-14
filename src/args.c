@@ -8,6 +8,7 @@
 #include <stdio.h>
 #include "args.h"
 #include "docs.h"
+#include "files.h"
 #include "html.h"
 #include "utils.h"
 
@@ -181,7 +182,7 @@ void c_regen(char *config) {
 #endif
 
     // Loading the template for pre-editing before generating the documents
-    struct HtmlBuffer *hb = load_html(template);
+    struct FileBuffer *hb = load_file(template);
     struct TemplatePositions *tp = malloc(sizeof(struct TemplatePositions));
     recheck_template_positions(hb, tp);
 

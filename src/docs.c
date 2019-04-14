@@ -35,7 +35,7 @@ static inline void delete_directory_buffer(struct DirectoryBuffer *db) {
  * Scans the directory and returns a struct with a list of strings with .c or .h
  * at the end of the filename
  * and a length of the list
- * @FIXME: Allocating monstrous amounts of memory for this and the htmlbuffer
+ * @FIXME: Allocating monstrous amounts of memory for this and the FileBuffer
  * @TODO: Error/Edge case checking - Namely if there is no relevant files in "dir"
  * @TODO: Offload the actual directory scanning so I can call it recursively
  */
