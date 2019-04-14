@@ -9,6 +9,7 @@
 #include <stdio.h>
 
 #include "defs.h"
+#include "files.h"
 #include "utils.h"
 
 
@@ -101,11 +102,20 @@ struct DirectoryBuffer *scan_directory(char *dir) {
  */
 void scan_file_functions(char *fp) {
     // We assume that fp is correct
-    FILE *f = fopen(fp, "r");
-    
+    struct FileBuffer *fb = load_file(fp);
 
+    // In the first pass we take out any line that starts with a blank space
+    for (int i = 0; i < fb->y_len; i++) {
+        if (**(fb->buf + i) == ' ' || **(fb->buf + i) == '\n') {
+            shift_pointers_left((void **) fb->buf, fb->y_len_true, 1, i + 1);
+            // No mallocing the free space because it won't be used again
+            fb->y_len--;
+            i--;
+        }
+    }
 
-
-
-    fclose(f);
+    // @TEST
+    for (int i = 0; i < fb->y_len; i++) {
+        printf("%s", *(fb->buf + i));
+    }
 }
