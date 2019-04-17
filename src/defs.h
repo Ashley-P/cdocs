@@ -22,4 +22,32 @@ struct DirectoryBuffer {
     // y_len_true is always MAX_BUFSIZE_MED
 };
 
+#define IDENTIFIER_STATIC 0x04
+#define IDENTIFIER_CONST  0x02
+#define IDENTIFIER_INLINE 0x01
+
+struct Identifier {
+    // Name of the function/struct/etc
+    char name[MAX_BUFSIZE_MED];
+    char type[MAX_BUFSIZE_MED];
+    /**
+     * MSB TO LSB
+     * is static?
+     * is const?
+     * is inline?
+     */
+    char extra:3;
+};
+
+// Deconstructed function
+struct FunctionDecon {
+    struct Identifier ident;
+
+    // Function parameters - Linked list of functions params
+    struct Node *params;
+
+    // source code - NOT YET IMPLEMENTED
+    struct FileBuffer;
+};
+
 #endif

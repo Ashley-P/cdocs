@@ -27,8 +27,10 @@ void list_push_front(struct Node **head, struct Node *new_node) {
 }
 
 void list_push_back(struct Node *head, struct Node *new_node) {
-    if (head->next)
-        list_push_back(head->next, new_node);
+     if (!head)
+         head = new_node;
+     else if (head->next)
+         list_push_back(head->next, new_node);
     else {
         head->next = new_node;
         new_node->prev = head;

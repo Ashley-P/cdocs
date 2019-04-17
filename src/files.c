@@ -8,9 +8,9 @@
 static inline int lines_in_file(const char *fn);
 
 // @TODO: Have the function accept an argument for y_len
-struct FileBuffer *create_html_buffer(int y_len) {
+struct FileBuffer *create_file_buffer(int y_len) {
     struct FileBuffer *ptr = malloc(sizeof(struct FileBuffer));
-    ptr->buf               = malloc(sizeof(char *) * MAX_BUFSIZE_MED);
+    ptr->buf               = malloc(sizeof(char *) * y_len);
     for (int i = 0; i < y_len; i++)
         *(ptr->buf + i) = calloc(MAX_BUFSIZE_SMALL, sizeof(char));
 
@@ -21,11 +21,11 @@ struct FileBuffer *create_html_buffer(int y_len) {
     return ptr;
 }
 
-void delete_html_buffer(struct FileBuffer *hb) {
-    for (int i = 0; i < MAX_BUFSIZE_MED; i++)
-        free(*(hb->buf + i));
-    free(hb->buf);
-    free(hb);
+void delete_file_buffer(struct FileBuffer *fb) {
+    for (int i = 0; i < fb->y_len_true; i++)
+        free(*(fb->buf + i));
+    free(fb->buf);
+    free(fb);
 }
 
 /**
@@ -34,14 +34,14 @@ void delete_html_buffer(struct FileBuffer *hb) {
  * @NOTE: Assumes that the filepath is correct
  */
 struct FileBuffer *load_file(char *fn) {
-    struct FileBuffer *buf = create_html_buffer(lines_in_file(fn));
+    struct FileBuffer *buf = create_file_buffer(lines_in_file(fn));
 
     FILE *f = fopen(fn, "r");
 
     if (!f) {
         // Proper error logging soon
         fprintf(stderr, "\nError in load_file: File does not exist");
-        delete_html_buffer(buf);
+        delete_file_buffer(buf);
         return NULL;
     }
 

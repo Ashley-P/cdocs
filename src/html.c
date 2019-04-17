@@ -73,7 +73,8 @@ int recheck_template_positions(const struct FileBuffer *fb, struct TemplatePosit
  * This edits the loaded template and customizes it to fit the source files
  * @TODO: Proper indenting
  */
-void gen_template(struct FileBuffer *fb, struct TemplatePositions *tp, struct DirectoryBuffer *db, char *docs) {
+void gen_template(struct FileBuffer *template_fb, struct TemplatePositions *tp,
+        struct DirectoryBuffer *db, char *doc_dir) {
     // Generating the file section in sidenav
     // @TODO: We need to match headers with the source files so we can combine their pages
     // Loop over the directory buffer
@@ -85,60 +86,17 @@ void gen_template(struct FileBuffer *fb, struct TemplatePositions *tp, struct Di
         // Check if the file is a header or a source file
         len = string_len(fname);
         if (*(fname + len - 1) == 'h')
-            add_hyperlink(fb, docs, fname, tp->sidenav_header + 1);
+            add_hyperlink(template_fb, doc_dir, fname, tp->sidenav_header + 1);
         else if (*(fname + len - 1) == 'c')
-            add_hyperlink(fb, docs, fname, tp->sidenav_source + 1);
+            add_hyperlink(template_fb, doc_dir, fname, tp->sidenav_source + 1);
         free(fname);
     }
 
 
-    // Recheck the template after every insertion
-    recheck_template_positions(fb, tp);
-
-    // Adding functions to the template
-    // @FIXME @TODO: Should probably refactor and put elsewhere
-    // TODO: Arrange the functions into alphabetical order
-    char func[MAX_BUFSIZE_MINI];
-    struct FileBuffer *functions;
-    int name_start;
-    int name_end;
-    // Resusing len
-    for (int k = 0; k < db->y_len; k++) {
-        // Scan each file
-        // Skip headers
-        if (*(*(db->buf + k) + string_len(*(db->buf + k))) == 'h')
-            continue;
-        functions = scan_file_functions(*(db->buf + k));
-
-        for (int i = 0; i < functions->y_len; i++) {
-            // Scan each line 
-            int len = string_len(*(functions->buf + i));
-            // @FIXME : Could be refactored
-            while (*(*(functions->buf + i) + len) != '(') {
-                len--;
-            }
-
-            // When we get to the opening parantheses we set name_end;
-            name_end = len;
-
-            while (*(*(functions->buf + i) + len) != ' ' &&
-                   *(*(functions->buf + i) + len) != '*') {
-                len--;
-            }
-            name_start = ++len;
-            str_cpy2(*(functions->buf + i) + name_start, func, name_end - name_start);
-
-            printf("%s\n", func);
-            add_hyperlink(fb, docs, func, tp->sidenav_functions + 1);
-        }
-
-        free(functions);
-    }
-
     // Save the custom template to the docs folder
     char fn[MAX_BUFSIZE_MED];
-    sprintf(fn, "%stemplates\\template.html", docs);
-    save_file(fb, fn);
+    sprintf(fn, "%stemplates\\template.html", doc_dir);
+    save_file(template_fb, fn);
 }
 
 /**

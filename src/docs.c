@@ -8,9 +8,16 @@
 
 #include <stdio.h>
 
-#include "defs.h"
+#include "docs.h"
 #include "files.h"
 #include "utils.h"
+
+
+
+
+// Function prototypes
+static inline struct Identifier *string_to_identifier(const char *str, int len);
+static inline int seek_to_character(const char *str, char ch);
 
 
 
@@ -101,7 +108,8 @@ struct DirectoryBuffer *scan_directory(char *dir) {
  * 1. We assume that each function starts with no indent
  * 2. Functions have the opening brace on the same line
  */
-struct FileBuffer *scan_file_functions(char *fp) {
+// Return a linked list of all the functions in 
+struct Node *scan_file_functions(char *fp) {
     // We assume that fp is correct
     struct FileBuffer *fb = load_file(fp);
     int a, b, c;
@@ -132,10 +140,81 @@ struct FileBuffer *scan_file_functions(char *fp) {
                 i--;
             }
         }
-        // Print out the line we are keeping - no real reason to do this
-        //printf("%s", *(fb->buf + i));
-        //fflush(stdout);
     }
-    printf("\n");
-    return fb;
+
+    /**
+     * Deconstructing what's left
+     * Since things can be typedef'd we can only shave off certain things
+     * Namely we can search explicitly for "static" "inline" "const" and "struct"
+     * Searching for struct let's us take the next word we find and correctly assume that
+     * it's the identifier for the struct
+     */
+    struct Node *head;
+    struct FunctionDecon *func;
+    //int param_len;
+    for (int i = 0; i < fb->y_len; i++) {
+        printf("%s", *(fb->buf + i));
+        fflush(stdout);
+        func = malloc(sizeof(struct FunctionDecon));
+        int str_len = seek_to_character(*(fb->buf + i), '(');
+        string_to_identifier(*(fb->buf + i), str_len + 1);
+
+    }
+    //return fb;
+}
+
+/**
+ * This function scans the supplied string and returns an "Identifier" struct
+ * Takes a length argument so I don't have to break up a string before entering it in
+ */
+static inline struct Identifier *string_to_identifier(const char *str, int len) {
+    struct Identifier *ident = malloc(sizeof(struct Identifier));
+    int word_start = 0;
+    int word_len;
+    while ((word_len = seek_to_character(str, ' ')) != -1) {
+        if (word_start + word_len > len) {
+            if (word_start < len) {
+                str_cpy2((str + word_start), ident->name, word_start - len);
+            } else {
+                break;
+            }
+        }
+        else if (string_cmp2((str + word_start), "static", word_len)) {
+            ident->extra |= 0x4;
+        } else if (string_cmp2((str + word_start), "const", word_len)) {
+            ident->extra |= 0x2;
+        } else if (string_cmp2((str + word_start), "inline", word_len)) {
+            ident->extra |= 0x1;
+        } else if (string_cmp2((str + word_start), "struct", word_len)) {
+            // If the word is struct then we automatically read the next word which is the type
+            int tmp = seek_to_character((str + word_start + word_len), ' ');
+            str_cpy2((str + word_start), ident->type, tmp);
+            word_start = tmp;
+            continue;
+        } else {
+            // Otherwise it's probably a type that we should copy
+            str_cpy2((str + word_start), ident->type, word_len);
+        }
+
+        word_start += word_len;
+    }
+
+    printf("Name  : %s\nType  : %s\nExtra : %d\n", ident->name, ident->type, ident->extra);
+
+
+    return ident;
+}
+
+/**
+ * This functions seeks to a provided character and returns the length -1 on failure
+ * TODO: Could do with an upgrade to skip occurences of ch up to a user passed number
+ */
+static inline int seek_to_character(const char *str, char ch) {
+    int i = 0;
+    while (*(str + i) != ch) {
+        if (*(str + i) == '\0') return -1;
+        else i++;
+    }
+
+    return i;
 }

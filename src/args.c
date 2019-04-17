@@ -9,6 +9,7 @@
 #include "args.h"
 #include "docs.h"
 #include "files.h"
+#include "ll.h"
 #include "html.h"
 #include "utils.h"
 
@@ -190,6 +191,17 @@ void c_regen(char *config) {
     // Scanning the files
     struct DirectoryBuffer *db = scan_directory(docgen->src_dir);
     if (!db) return;
+    // The template needs atleast the names of functions etc so we just deconstruct the whole thing
+    // Here and pass it to gen_template
+    // Loop through 
+    struct Node *functions = scan_file_functions(*db->buf);
+
+#if 0
+    for (int i = 0; i < db->y_len; i++) {
+        struct Node *temp = scan_file_functions(*(db->buf + i));
+        list_push_back(functions, temp);
+    }
+#endif 
 
     // Gen the template
     gen_template(hb, tp, db, docgen->doc_dir);
