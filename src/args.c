@@ -25,7 +25,7 @@ void setup_docgen(char *config, struct DocGen *docgen);
 const static char *command_names[] = {"new",
                                       "regen",};
 
-void parse_arguments(int argc, char** argv) {
+void parse_arguments(int argc, char **argv) {
     // Just return if there is no argument supplied
     if (argc < 2) {
         return;
@@ -146,7 +146,8 @@ void c_regen(char *config) {
         return;
     }
 
-    char bin_dir[MAX_BUFSIZE_MED];
+    //char bin_dir[MAX_BUFSIZE_MED];
+    char *bin_dir = calloc(MAX_BUFSIZE_MED, sizeof(char));
     GetModuleFileNameA(NULL, bin_dir, MAX_BUFSIZE_MED);
 #endif
 
@@ -159,21 +160,27 @@ void c_regen(char *config) {
         slash_pos--;
 
     *(bin_dir + slash_pos) = '\0';
-    char template[MAX_BUFSIZE_MED];
-    char js[MAX_BUFSIZE_MED];
-    char css[MAX_BUFSIZE_MED];
+    //char template[MAX_BUFSIZE_MED];
+    //char js[MAX_BUFSIZE_MED];
+    //char css[MAX_BUFSIZE_MED];
+    char *template = calloc(MAX_BUFSIZE_MED, sizeof(char));
+    char *js       = calloc(MAX_BUFSIZE_MED, sizeof(char));
+    char *css      = calloc(MAX_BUFSIZE_MED, sizeof(char));
     sprintf(template, "%s\\resources\\template.html", bin_dir);
     sprintf(js,       "%s\\resources\\dropdown.js",   bin_dir);
     sprintf(css,      "%s\\resources\\styles.css",    bin_dir);
 
+    free(bin_dir);
     // Setting up DocGen
     struct DocGen *docgen = malloc(sizeof(struct DocGen));
     setup_docgen(config, docgen);
 
 
     // Copying the non-edited files over to the docs folder
-    char js_path[MAX_BUFSIZE_MED];
-    char css_path[MAX_BUFSIZE_MED];
+    //char js_path[MAX_BUFSIZE_MED];
+    //char css_path[MAX_BUFSIZE_MED];
+    char *js_path  = calloc(MAX_BUFSIZE_MED, sizeof(char));
+    char *css_path = calloc(MAX_BUFSIZE_MED, sizeof(char));
     sprintf(js_path, "%stemplates\\dropdown.js", docgen->doc_dir);
     sprintf(css_path, "%stemplates\\styles.css", docgen->doc_dir);
 
@@ -187,13 +194,13 @@ void c_regen(char *config) {
     struct TemplatePositions *tp = malloc(sizeof(struct TemplatePositions));
     recheck_template_positions(hb, tp);
 
-    // @TEST: Testing to see if I can grab filenames for future use
     // Scanning the files
     struct DirectoryBuffer *db = scan_directory(docgen->src_dir);
     if (!db) return;
+
     // The template needs atleast the names of functions etc so we just deconstruct the whole thing
     // Here and pass it to gen_template
-    // Loop through 
+    // We should only search for functions in .c files
     struct Node *functions = scan_file_functions(*db->buf);
 
 #if 0
@@ -204,8 +211,14 @@ void c_regen(char *config) {
 #endif 
 
     // Gen the template
-    gen_template(hb, tp, db, docgen->doc_dir);
+    //gen_template(hb, tp, db, docgen->doc_dir);
     printf("Valid!");
+
+    free(template);
+    free(js);
+    free(css);
+    free(js_path);
+    free(css_path);
 }
 
 char *reverse_docgenopt_enum(enum DocGenOpt a) {

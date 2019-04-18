@@ -112,23 +112,26 @@ struct DirectoryBuffer *scan_directory(char *dir) {
 struct Node *scan_file_functions(char *fp) {
     // We assume that fp is correct
     struct FileBuffer *fb = load_file(fp);
-    int a, b, c;
 
     /**
      * Cull the lines
      * We assume that functions have no leading spaces
      * Our culling assumes that functions have a '(' and ')' and '{'
      */
-    for (int i = 0; i < fb->y_len; i++) {
+    int a, b, c;
+    int str_len;
+    int i = 0;
+    while (i < fb->y_len) {
         a = 0; b = 0; c = 0;
 
         if (**(fb->buf + i) == ' ' || **(fb->buf + i) == '\n') {
             // No mallocing the free space because it won't be used again
             shift_pointers_left((void **) fb->buf, fb->y_len_true, 1, i + 1);
             fb->y_len--;
-            i--;
+            continue;
         } else {
-            for (int j = 0; j < string_len(*(fb->buf + i)); j++) {
+            str_len = string_len(*(fb->buf + i));
+            for (int j = 0; j < str_len; j++) {
                 if (*(*(fb->buf + i) + j) == '(') a = 1;
                 else if (*(*(fb->buf + i) + j) == ')') b = 1;
                 else if (*(*(fb->buf + i) + j) == '{') c = 1;
@@ -137,9 +140,11 @@ struct Node *scan_file_functions(char *fp) {
             if (!a || !b || !c) {
                 shift_pointers_left((void **) fb->buf, fb->y_len_true, 1, i + 1);
                 fb->y_len--;
-                i--;
+                continue;
             }
         }
+
+        i++;
     }
 
     /**
@@ -149,18 +154,31 @@ struct Node *scan_file_functions(char *fp) {
      * Searching for struct let's us take the next word we find and correctly assume that
      * it's the identifier for the struct
      */
-    struct Node *head;
+    struct Node *func_list = NULL;
+    struct Node *func_params = NULL;
     struct FunctionDecon *func;
+    struct Identifier *identifier;
     //int param_len;
     for (int i = 0; i < fb->y_len; i++) {
-        printf("%s", *(fb->buf + i));
-        fflush(stdout);
         func = malloc(sizeof(struct FunctionDecon));
-        int str_len = seek_to_character(*(fb->buf + i), '(');
-        string_to_identifier(*(fb->buf + i), str_len + 1);
+        func->params = NULL;
+        // Reusing str_len;
+        str_len = seek_to_character(*(fb->buf + i), '(');
 
+        // Getting the identifier for the function itself
+        identifier = string_to_identifier(*(fb->buf + i), str_len);
+        func->ident = *identifier;
+        printf("Name  : %s\nType  : %s\nPointers : %d\nExtra : %d\n", func->ident.name, func->ident.type,
+                func->ident.ptr, func->ident.extra);
+        printf("\n");
+
+        // Getting the parameters for 
+        list_push_back(func_list, create_node(func));
     }
-    //return fb;
+
+    return func_list;
+
+    free(identifier);
 }
 
 /**
@@ -168,40 +186,54 @@ struct Node *scan_file_functions(char *fp) {
  * Takes a length argument so I don't have to break up a string before entering it in
  */
 static inline struct Identifier *string_to_identifier(const char *str, int len) {
+    //printf("%s\n", str);
     struct Identifier *ident = malloc(sizeof(struct Identifier));
-    int word_start = 0;
-    int word_len;
-    while ((word_len = seek_to_character(str, ' ')) != -1) {
-        if (word_start + word_len > len) {
-            if (word_start < len) {
-                str_cpy2((str + word_start), ident->name, word_start - len);
-            } else {
-                break;
-            }
-        }
-        else if (string_cmp2((str + word_start), "static", word_len)) {
-            ident->extra |= 0x4;
-        } else if (string_cmp2((str + word_start), "const", word_len)) {
-            ident->extra |= 0x2;
-        } else if (string_cmp2((str + word_start), "inline", word_len)) {
-            ident->extra |= 0x1;
-        } else if (string_cmp2((str + word_start), "struct", word_len)) {
-            // If the word is struct then we automatically read the next word which is the type
-            int tmp = seek_to_character((str + word_start + word_len), ' ');
-            str_cpy2((str + word_start), ident->type, tmp);
-            word_start = tmp;
-            continue;
-        } else {
-            // Otherwise it's probably a type that we should copy
-            str_cpy2((str + word_start), ident->type, word_len);
-        }
+    struct FileBuffer *buf = create_file_buffer(MAX_BUFSIZE_TINY);
+    ident->ptr   = 0;
+    ident->extra = 0;
 
-        word_start += word_len;
+    // Split up the string
+    int a = 0;
+    int b = 0;
+    buf->y_len = 1;
+    char *bufstr = *(buf->buf);
+    for (int i = 0; i < len; i++) {
+        if (*(str + i) == ' ') {
+            buf->y_len++;
+            bufstr = *(buf->buf + ++a);
+            b = 0;
+        } else {
+            *(bufstr + b++) = *(str + i);
+        }
     }
 
-    printf("Name  : %s\nType  : %s\nExtra : %d\n", ident->name, ident->type, ident->extra);
+    // Check each string
+    for (int i = 0; i < buf->y_len; i++) {
+        if (string_cmp(*(buf->buf + i), "static")) {
+            ident->extra |= IDENTIFIER_STATIC;
+        } else if (string_cmp(*(buf->buf + i), "const")) {
+            ident->extra |= IDENTIFIER_CONST;
+        } else if (string_cmp(*(buf->buf + i), "inline")) {
+            ident->extra |= IDENTIFIER_INLINE;
+        } else if (string_cmp(*(buf->buf + i), "struct")) {
+            // For a struct we automatically copy this and the next thing in the buffer to the typ
+            sprintf(ident->type, "%s %s", *(buf->buf + i), *(buf->buf + i + 1));
+            i++;
+        } else if (buf->y_len - 1 == i) {
+            // If we are at the end then it's like the name of the identifier
+            sprintf(ident->name, "%s", *(buf->buf + i));
+        } else {
+            sprintf(ident->type, "%s", *(buf->buf + i));
+        }
+    }
 
+    // Checking for pointers attached to the variable name
+    while (*ident->name == '*') {
+        ident->ptr++;
+        shift_chars_left(ident->name, string_len(ident->name), 1, 0);
+    }
 
+    free(buf);
     return ident;
 }
 

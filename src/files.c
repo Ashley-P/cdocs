@@ -10,7 +10,7 @@ static inline int lines_in_file(const char *fn);
 // @TODO: Have the function accept an argument for y_len
 struct FileBuffer *create_file_buffer(int y_len) {
     struct FileBuffer *ptr = malloc(sizeof(struct FileBuffer));
-    ptr->buf               = malloc(sizeof(char *) * y_len);
+    ptr->buf               = calloc(y_len, sizeof(char *));
     for (int i = 0; i < y_len; i++)
         *(ptr->buf + i) = calloc(MAX_BUFSIZE_SMALL, sizeof(char));
 

@@ -30,6 +30,7 @@ struct Identifier {
     // Name of the function/struct/etc
     char name[MAX_BUFSIZE_MED];
     char type[MAX_BUFSIZE_MED];
+    int ptr;
     /**
      * MSB TO LSB
      * is static?
