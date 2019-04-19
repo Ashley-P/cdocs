@@ -212,6 +212,8 @@ void c_regen(char *config) {
         }
     }
 
+    printf("\n");
+
     // Gen the template
     //gen_template(hb, tp, db, docgen->doc_dir);
     printf("Valid!");

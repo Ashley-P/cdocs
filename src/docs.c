@@ -65,7 +65,6 @@ struct DirectoryBuffer *scan_directory(char *dir) {
     // Getting first file and the handle for searching
     HANDLE src_srch = FindFirstFileA(srcfiles, file_info);
     int files_found = 0;
-    printf("Files found %d!\r", files_found);
 
     if (src_srch == INVALID_HANDLE_VALUE) {
         fprintf(stderr, "Error in scan_directory: Invalid handle value");
@@ -76,8 +75,7 @@ struct DirectoryBuffer *scan_directory(char *dir) {
     do {
         sprintf(*(db->buf + db->y_len), "%s%s", dir, file_info->cFileName);
         db->y_len++;
-        files_found++;
-        printf("Files found %d!\r", files_found);
+        printf("%d files found!\r", ++files_found);
     } while (FindNextFileA(src_srch, file_info) != 0);
 
     HANDLE hdr_srch = FindFirstFileA(hdrfiles, file_info);
@@ -90,8 +88,7 @@ struct DirectoryBuffer *scan_directory(char *dir) {
     do {
         sprintf(*(db->buf + db->y_len), "%s%s", dir, file_info->cFileName);
         db->y_len++;
-        files_found++;
-        printf("Files found %d!\r", files_found);
+        printf("%d files found!\r", ++files_found);
     } while (FindNextFileA(hdr_srch, file_info) != 0);
 
     printf("\n");
@@ -120,6 +117,7 @@ struct Node *scan_file_functions(char *fp) {
      * We assume that functions have no leading spaces
      * Our culling assumes that functions have a '(' and ')' and '{'
      */
+    static int functions_found;
     int a, b, c;
     int str_len;
     int i;
@@ -167,15 +165,11 @@ struct Node *scan_file_functions(char *fp) {
         // Getting the identifier for the function itself
         identifier = string_to_identifier(*(fb->buf + i), str_len);
         func->ident = *identifier;
-        printf("Name  : %s\tType  : %s\tPointers : %d\tExtra : %d\t", func->ident.name, func->ident.type,
-                func->ident.ptr, func->ident.extra);
-        printf("\n");
 
         // Getting the parameters for the functions
         char *param_start = *(fb->buf + i) + str_len + 1;
         int comma_dist;
         int paren_dist;
-        printf("%s\n", param_start);
 
         while (1) {
             comma_dist = seek_to_character(param_start, ',');
@@ -183,28 +177,21 @@ struct Node *scan_file_functions(char *fp) {
             if (paren_dist <= 1) break;
             else if (comma_dist == -1) {
                 identifier = string_to_identifier(param_start, paren_dist);
-                printf("Name  : %s\tType  : %s\tPointers : %d\tExtra : %d\n", identifier->name,
-                        identifier->type, identifier->ptr, identifier->extra);
                 param_start = consume_spaces(param_start + paren_dist + 1);
-                printf("%s\n", param_start);
                 list_push_back(func->params, create_node(identifier));
             } else {
                 identifier = string_to_identifier(param_start, comma_dist);
-                printf("Name  : %s\tType  : %s\tPointers : %d\tExtra : %d\n", identifier->name,
-                        identifier->type, identifier->ptr, identifier->extra);
                 param_start = consume_spaces(param_start + comma_dist + 1);
-                printf("%s\n", param_start);
                 list_push_back(func->params, create_node(identifier));
             }
         }
 
-        printf("\n\n");
+        printf("%d functions found!\r", ++functions_found);
         list_push_back(func_list, create_node(func));
     }
 
-    return func_list;
 
-    free(identifier);
+    return func_list;
 }
 
 /**
