@@ -317,6 +317,15 @@ void shift_chars_left(char *str, size_t sz, int shift_len, int shift_pos) {
 
 }
 
+// Returns a pointer that is at the first non-whitespace character in the string
+char *consume_spaces(char *str) {
+    char *tmp = str;
+    while (*tmp == ' ')
+        ++tmp;
+
+    return tmp;
+}
+
 unsigned char is_digit(wchar_t ch) {
     if (ch >= L'0' && ch <= L'9') return 1;
     else return 0;

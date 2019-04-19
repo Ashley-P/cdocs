@@ -201,14 +201,16 @@ void c_regen(char *config) {
     // The template needs atleast the names of functions etc so we just deconstruct the whole thing
     // Here and pass it to gen_template
     // We should only search for functions in .c files
-    struct Node *functions = scan_file_functions(*db->buf);
+    struct Node *functions = NULL;
 
-#if 0
     for (int i = 0; i < db->y_len; i++) {
-        struct Node *temp = scan_file_functions(*(db->buf + i));
-        list_push_back(functions, temp);
+        if (*(*(db->buf + i) + string_len(*(db->buf + i)) - 1) == 'h')
+            continue;
+        else {
+            struct Node *temp = scan_file_functions(*(db->buf + i));
+            list_push_back(functions, temp);
+        }
     }
-#endif 
 
     // Gen the template
     //gen_template(hb, tp, db, docgen->doc_dir);

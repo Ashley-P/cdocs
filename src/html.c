@@ -16,14 +16,6 @@ static inline char *get_filename(char *fpath);
 
 
 
-// Returns a pointer that is at the first non-whitespace character in the string
-static inline char *consume_spaces(char *str) {
-    char *tmp = str;
-    while (*tmp == ' ')
-        ++tmp;
-
-    return tmp;
-}
 
 /**
  * Finds the html comment <!-- CDOCS:<comment> --> and returns the line number

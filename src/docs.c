@@ -16,7 +16,8 @@
 
 
 // Function prototypes
-static inline struct Identifier *string_to_identifier(const char *str, int len);
+//static inline
+struct Identifier *string_to_identifier(const char *str, int len);
 static inline int seek_to_character(const char *str, char ch);
 
 
@@ -52,8 +53,8 @@ struct DirectoryBuffer *scan_directory(char *dir) {
     struct DirectoryBuffer *db = create_directory_buffer();
 
     // Getting full paths
-    char srcfiles[MAX_BUFSIZE_MED];
-    char hdrfiles[MAX_BUFSIZE_MED];
+    char *srcfiles = calloc(MAX_BUFSIZE_MED, sizeof(char));
+    char *hdrfiles = calloc(MAX_BUFSIZE_MED, sizeof(char));
 
     sprintf(srcfiles, "%s*.c", dir);
     sprintf(hdrfiles, "%s*.h", dir);
@@ -97,7 +98,8 @@ struct DirectoryBuffer *scan_directory(char *dir) {
     FindClose(src_srch);
     FindClose(hdr_srch);
 #endif
-
+    free(srcfiles);
+    free(hdrfiles);
     return db;
 }
 
@@ -120,15 +122,15 @@ struct Node *scan_file_functions(char *fp) {
      */
     int a, b, c;
     int str_len;
-    int i = 0;
-    while (i < fb->y_len) {
+    int i;
+
+    for (i = 0; i < fb->y_len_true; i++) {
         a = 0; b = 0; c = 0;
 
         if (**(fb->buf + i) == ' ' || **(fb->buf + i) == '\n') {
             // No mallocing the free space because it won't be used again
-            shift_pointers_left((void **) fb->buf, fb->y_len_true, 1, i + 1);
-            fb->y_len--;
-            continue;
+            free(*(fb->buf + i));
+            *(fb->buf + i) = NULL;
         } else {
             str_len = string_len(*(fb->buf + i));
             for (int j = 0; j < str_len; j++) {
@@ -138,13 +140,10 @@ struct Node *scan_file_functions(char *fp) {
             }
 
             if (!a || !b || !c) {
-                shift_pointers_left((void **) fb->buf, fb->y_len_true, 1, i + 1);
-                fb->y_len--;
-                continue;
+                free(*(fb->buf + i));
+                *(fb->buf + i) = NULL;
             }
         }
-
-        i++;
     }
 
     /**
@@ -155,11 +154,11 @@ struct Node *scan_file_functions(char *fp) {
      * it's the identifier for the struct
      */
     struct Node *func_list = NULL;
-    struct Node *func_params = NULL;
     struct FunctionDecon *func;
     struct Identifier *identifier;
     //int param_len;
     for (int i = 0; i < fb->y_len; i++) {
+        if (*(fb->buf + i) == NULL) continue;
         func = malloc(sizeof(struct FunctionDecon));
         func->params = NULL;
         // Reusing str_len;
@@ -168,11 +167,38 @@ struct Node *scan_file_functions(char *fp) {
         // Getting the identifier for the function itself
         identifier = string_to_identifier(*(fb->buf + i), str_len);
         func->ident = *identifier;
-        printf("Name  : %s\nType  : %s\nPointers : %d\nExtra : %d\n", func->ident.name, func->ident.type,
+        printf("Name  : %s\tType  : %s\tPointers : %d\tExtra : %d\t", func->ident.name, func->ident.type,
                 func->ident.ptr, func->ident.extra);
         printf("\n");
 
-        // Getting the parameters for 
+        // Getting the parameters for the functions
+        char *param_start = *(fb->buf + i) + str_len + 1;
+        int comma_dist;
+        int paren_dist;
+        printf("%s\n", param_start);
+
+        while (1) {
+            comma_dist = seek_to_character(param_start, ',');
+            paren_dist = seek_to_character(param_start, ')');
+            if (paren_dist <= 1) break;
+            else if (comma_dist == -1) {
+                identifier = string_to_identifier(param_start, paren_dist);
+                printf("Name  : %s\tType  : %s\tPointers : %d\tExtra : %d\n", identifier->name,
+                        identifier->type, identifier->ptr, identifier->extra);
+                param_start = consume_spaces(param_start + paren_dist + 1);
+                printf("%s\n", param_start);
+                list_push_back(func->params, create_node(identifier));
+            } else {
+                identifier = string_to_identifier(param_start, comma_dist);
+                printf("Name  : %s\tType  : %s\tPointers : %d\tExtra : %d\n", identifier->name,
+                        identifier->type, identifier->ptr, identifier->extra);
+                param_start = consume_spaces(param_start + comma_dist + 1);
+                printf("%s\n", param_start);
+                list_push_back(func->params, create_node(identifier));
+            }
+        }
+
+        printf("\n\n");
         list_push_back(func_list, create_node(func));
     }
 
@@ -185,7 +211,8 @@ struct Node *scan_file_functions(char *fp) {
  * This function scans the supplied string and returns an "Identifier" struct
  * Takes a length argument so I don't have to break up a string before entering it in
  */
-static inline struct Identifier *string_to_identifier(const char *str, int len) {
+//static inline
+struct Identifier *string_to_identifier(const char *str, int len) {
     //printf("%s\n", str);
     struct Identifier *ident = malloc(sizeof(struct Identifier));
     struct FileBuffer *buf = create_file_buffer(MAX_BUFSIZE_TINY);
@@ -215,8 +242,8 @@ static inline struct Identifier *string_to_identifier(const char *str, int len) 
             ident->extra |= IDENTIFIER_CONST;
         } else if (string_cmp(*(buf->buf + i), "inline")) {
             ident->extra |= IDENTIFIER_INLINE;
-        } else if (string_cmp(*(buf->buf + i), "struct")) {
-            // For a struct we automatically copy this and the next thing in the buffer to the typ
+        } else if (string_cmp(*(buf->buf + i), "struct")  || string_cmp(*(buf->buf + i), "enum")) {
+            // For a struct or enum we automatically copy this and the next thing in the buffer to the typ
             sprintf(ident->type, "%s %s", *(buf->buf + i), *(buf->buf + i + 1));
             i++;
         } else if (buf->y_len - 1 == i) {
