@@ -16,8 +16,7 @@
 
 
 // Function prototypes
-//static inline
-struct Identifier *string_to_identifier(const char *str, int len);
+static inline struct Identifier *string_to_identifier(const char *str, int len);
 static inline int seek_to_character(const char *str, char ch);
 
 
@@ -102,7 +101,7 @@ struct DirectoryBuffer *scan_directory(char *dir) {
 
 /**
  * Scans the file and returns each function definition
- * @NOTE:
+ * @NOTE Assumptions:
  * 0. Function prototypes are skipped
  * 1. We assume that each function starts with no indent
  * 2. Functions have the opening brace on the same line
@@ -165,6 +164,7 @@ struct Node *scan_file_functions(char *fp) {
         // Getting the identifier for the function itself
         identifier = string_to_identifier(*(fb->buf + i), str_len);
         func->ident = *identifier;
+        free(identifier);
 
         // Getting the parameters for the functions
         char *param_start = *(fb->buf + i) + str_len + 1;
@@ -195,11 +195,88 @@ struct Node *scan_file_functions(char *fp) {
 }
 
 /**
+ * Same as "scan_file_functions" but for structs
+ * @TODO: We can't collect structs that are defined in structs
+ * We can't cull because the members are on different lines
+ * @NOTE Assumptions:
+ * 0. Structs are unindented (including the closing '}' // Will change later
+ * 1. They are only defined in headers
+ */
+struct Node *scan_file_structs(char *fp) {
+    struct FileBuffer *fb = load_file(fp);
+    static int structs_found;
+
+    /**
+     * @NOTE Assumptions for structs:
+     * 0. No leading spaces
+     * 1. Starts with the word "struct"
+     * 2. contain a curly bracket but no parentheses
+     * 
+     */
+    int a, b, i, j;
+    int str_len;
+    char *member_start; // Required for "consume_spaces"
+    struct Node *struct_list = NULL;
+    struct StructDecon *strct;
+    struct Identifier *identifier;
+
+    for (i = 0; i < fb->y_len_true; i++) {
+        a = 0; b = 0;
+
+        if (**(fb->buf + i) == ' ' || **(fb->buf + i) == '\n') {
+            continue;
+        } else if (string_cmp2(*(fb->buf + i), "struct", 6)) {
+            // If the string matches then we check to make sure it is a struct and not a function
+
+            str_len = string_len(*(fb->buf + i));
+            for (j = 0; j < str_len; j++) {
+                if (*(*(fb->buf + i) + j) == '(') a = 1;
+                else if (*(*(fb->buf + i) + j) == '{') b = 1;
+            }
+            if (a && !b) continue;
+
+            // If we get here then the first line is the struct and the following lines are members
+            strct = malloc(sizeof(struct StructDecon));
+            strct->members = NULL;
+            identifier = string_to_identifier(*(fb->buf + i), str_len);
+            strct->ident = *identifier;
+            free(identifier);
+            member_start = consume_spaces(*(fb->buf + i));
+
+            // Iterate through the struct and make sure we don't copy junk lines
+            //for (j = 0; *member_start != '}'; j++) {
+            j = 0;
+            do {
+
+                // If it starts with a '/' Then it's probably a comment same with '*'
+                if (**(fb->buf + i) == '\n' || **(fb->buf + i) == '/' || **(fb->buf + i) == '*') {
+                    j++;
+                    continue;
+                }
+                
+                str_len = string_len(member_start);
+                identifier = string_to_identifier(member_start, str_len);
+                list_push_back(strct->members, create_node(identifier));
+                member_start = consume_spaces(*(fb->buf + i + ++j));
+            } while (*member_start != '}');
+
+            // Skipping the rest of the struct
+            i += j;
+            list_push_back(struct_list, create_node(strct));
+            printf("%d structs found!\r", ++structs_found);
+        }
+    }
+
+    return struct_list;
+}
+
+/**
  * This function scans the supplied string and returns an "Identifier" struct
  * Takes a length argument so I don't have to break up a string before entering it in
+ * @NOTE @TODO: Can't collect function pointers yet
+ * @NOTE @TODO: Can't collect arrays that look like this "arr[size]";
  */
-//static inline
-struct Identifier *string_to_identifier(const char *str, int len) {
+static inline struct Identifier *string_to_identifier(const char *str, int len) {
     //printf("%s\n", str);
     struct Identifier *ident = malloc(sizeof(struct Identifier));
     struct FileBuffer *buf = create_file_buffer(MAX_BUFSIZE_TINY);
@@ -234,7 +311,8 @@ struct Identifier *string_to_identifier(const char *str, int len) {
             sprintf(ident->type, "%s %s", *(buf->buf + i), *(buf->buf + i + 1));
             i++;
         } else if (buf->y_len - 1 == i) {
-            // If we are at the end then it's like the name of the identifier
+            // Do the arr[size] check here
+            // If we are at the end then it's likely the name of the variable
             sprintf(ident->name, "%s", *(buf->buf + i));
         } else {
             sprintf(ident->type, "%s", *(buf->buf + i));
@@ -247,7 +325,7 @@ struct Identifier *string_to_identifier(const char *str, int len) {
         shift_chars_left(ident->name, string_len(ident->name), 1, 0);
     }
 
-    free(buf);
+    delete_file_buffer(buf);
     return ident;
 }
 

@@ -160,9 +160,6 @@ void c_regen(char *config) {
         slash_pos--;
 
     *(bin_dir + slash_pos) = '\0';
-    //char template[MAX_BUFSIZE_MED];
-    //char js[MAX_BUFSIZE_MED];
-    //char css[MAX_BUFSIZE_MED];
     char *template = calloc(MAX_BUFSIZE_MED, sizeof(char));
     char *js       = calloc(MAX_BUFSIZE_MED, sizeof(char));
     char *css      = calloc(MAX_BUFSIZE_MED, sizeof(char));
@@ -177,8 +174,6 @@ void c_regen(char *config) {
 
 
     // Copying the non-edited files over to the docs folder
-    //char js_path[MAX_BUFSIZE_MED];
-    //char css_path[MAX_BUFSIZE_MED];
     char *js_path  = calloc(MAX_BUFSIZE_MED, sizeof(char));
     char *css_path = calloc(MAX_BUFSIZE_MED, sizeof(char));
     sprintf(js_path, "%stemplates\\dropdown.js", docgen->doc_dir);
@@ -202,17 +197,31 @@ void c_regen(char *config) {
     // Here and pass it to gen_template
     // We should only search for functions in .c files
     struct Node *functions = NULL;
+    struct Node *temp;
 
     for (int i = 0; i < db->y_len; i++) {
         if (*(*(db->buf + i) + string_len(*(db->buf + i)) - 1) == 'h')
             continue;
         else {
-            struct Node *temp = scan_file_functions(*(db->buf + i));
+            temp = scan_file_functions(*(db->buf + i));
             list_push_back(functions, temp);
         }
     }
-
     printf("\n");
+
+    // Collecting structs
+    struct Node *structs = NULL;
+
+    for (int i = 0; i < db->y_len; i++) {
+        if (*(*(db->buf + i) + string_len(*(db->buf + i)) - 1) == 'c')
+            continue;
+        else {
+            temp = scan_file_structs(*(db->buf + i));
+            list_push_back(structs, temp);
+        }
+    }
+    printf("\n");
+
 
     // Gen the template
     //gen_template(hb, tp, db, docgen->doc_dir);

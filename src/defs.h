@@ -51,4 +51,12 @@ struct FunctionDecon {
     struct FileBuffer;
 };
 
+// Deconstructed struct
+struct StructDecon {
+    struct Identifier ident;
+
+    // Struct parameters - Linked list of functions params
+    struct Node *members;
+};
+
 #endif

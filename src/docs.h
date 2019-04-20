@@ -7,5 +7,6 @@
 // Extern Functions
 struct DirectoryBuffer *scan_directory(char *dir);
 struct Node *scan_file_functions(char *fp);
+struct Node *scan_file_structs(char *fp);
 
 #endif
