@@ -233,7 +233,8 @@ struct Node *scan_file_structs(char *fp) {
                 if (*(*(fb->buf + i) + j) == '(') a = 1;
                 else if (*(*(fb->buf + i) + j) == '{') b = 1;
             }
-            if (a && !b) continue;
+            if (a) continue;
+            else if (!b) continue;
 
             // If we get here then the first line is the struct and the following lines are members
             strct = malloc(sizeof(struct StructDecon));

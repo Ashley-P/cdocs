@@ -193,6 +193,7 @@ void c_regen(char *config) {
     struct DirectoryBuffer *db = scan_directory(docgen->src_dir);
     if (!db) return;
 
+    // @TODO: The function/struct/etc collecting should be refactored
     // The template needs atleast the names of functions etc so we just deconstruct the whole thing
     // Here and pass it to gen_template
     // We should only search for functions in .c files
@@ -200,12 +201,8 @@ void c_regen(char *config) {
     struct Node *temp;
 
     for (int i = 0; i < db->y_len; i++) {
-        if (*(*(db->buf + i) + string_len(*(db->buf + i)) - 1) == 'h')
-            continue;
-        else {
-            temp = scan_file_functions(*(db->buf + i));
-            list_push_back(functions, temp);
-        }
+        temp = scan_file_functions(*(db->buf + i));
+        list_push_back(functions, temp);
     }
     printf("\n");
 
@@ -213,15 +210,24 @@ void c_regen(char *config) {
     struct Node *structs = NULL;
 
     for (int i = 0; i < db->y_len; i++) {
-        if (*(*(db->buf + i) + string_len(*(db->buf + i)) - 1) == 'c')
-            continue;
-        else {
-            temp = scan_file_structs(*(db->buf + i));
-            list_push_back(structs, temp);
-        }
+        temp = scan_file_structs(*(db->buf + i));
+        list_push_back(structs, temp);
     }
     printf("\n");
 
+    // Collecting enums
+#if 0
+    struct Node *enums = NULL;
+    for (int i = 0; i < db->y_len; i++) {
+        if (*(*(db->buf + i) + string_len(*(db->buf + i)) - 1) == 'c')
+            continue;
+        else {
+            temp = scan_file_enums(*(db->buf + i));
+            list_push_back(enums, temp);
+        }
+    }
+    printf("\n");
+#endif
 
     // Gen the template
     //gen_template(hb, tp, db, docgen->doc_dir);
