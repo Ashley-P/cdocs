@@ -15,6 +15,7 @@ struct List {
 };
 
 // Extern Functions
+struct List *list_init();
 struct Node *create_node(void *data);
 void delete_node(struct Node *node);
 void list_push_front(struct List *list, struct Node *node);

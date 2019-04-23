@@ -196,7 +196,14 @@ void c_regen(char *config) {
      * Collecting all the relevant information in one pass of the files
      * Instead of multiple passes like before
      */
-#if 0
+    struct List *functions = list_init();
+    struct List *structs = list_init();
+    struct List *enums = list_init();
+    //struct List *defines;
+
+    scan_files(db, functions, structs, enums);
+
+#if 0              
     // @TODO: The function/struct/etc collecting should be refactored
     // The template needs atleast the names of functions etc so we just deconstruct the whole thing
     // Here and pass it to gen_template

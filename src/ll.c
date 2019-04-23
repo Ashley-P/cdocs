@@ -6,6 +6,15 @@ static inline void unlink_node(struct Node *node);
 
 
 
+struct List *list_init() {
+    struct List *ptr = malloc(sizeof(struct List));
+    ptr->size = 0;
+    ptr->head = NULL;
+    ptr->tail = NULL;
+
+    return ptr;
+}
+
 struct Node *create_node(void *data) {
     struct Node *ptr = malloc(sizeof(struct Node));
 

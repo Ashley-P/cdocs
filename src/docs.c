@@ -16,7 +16,7 @@
 
 
 // Function prototypes
-static inline struct Identifier *string_to_identifier(const char *str, int len);
+static inline struct Identifier *string_to_identifier(const char *str);
 static inline int seek_to_character(const char *str, char ch);
 
 
@@ -364,12 +364,39 @@ struct Node *scan_file_enums(char *fp) {
 #endif
 
 /**
+ * The new and improved scanning function
+ * This scans an individual file and fills out the linked lists
+ */
+void scan_file(char *fp, struct List *functions, struct List *structs, struct List *enums,
+        unsigned int *functions_found, unsigned int *structs_found, unsigned int *enums_found) {
+}
+
+/**
+ * Scans a DirectoryBuffer and calls scan_file
+ */
+void scan_files(struct DirectoryBuffer *db, struct List *functions, struct List *structs, struct List *enums) {
+    unsigned int *functions_found = malloc(sizeof(unsigned int));
+    unsigned int *structs_found   = malloc(sizeof(unsigned int));
+    unsigned int *enums_found     = malloc(sizeof(unsigned int));
+    functions_found = 0;
+    structs_found   = 0;
+    enums_found     = 0;
+
+    for (int i = 0; i < db->y_len; i++) {
+        scan_file(*(db->buf + i), functions, structs, enums, functions_found, structs_found, enums_found);
+    }
+    printf("%d functions found", *functions_found);
+    printf("%d structs found", *structs_found);
+    printf("%d enums found", *enums_found);
+}
+
+/**
  * This function scans the supplied string and returns an "Identifier" struct
  * Takes a length argument so I don't have to break up a string before entering it in
  * @NOTE @TODO: Can't collect function pointers yet
  * @NOTE @TODO: Can't collect arrays that look like this "arr[size]";
  */
-static inline struct Identifier *string_to_identifier(const char *str, int len) {
+static inline struct Identifier *string_to_identifier(const char *str) {
     //printf("%s\n", str);
     struct Identifier *ident = malloc(sizeof(struct Identifier));
     struct FileBuffer *buf = create_file_buffer(MAX_BUFSIZE_TINY);
@@ -377,6 +404,7 @@ static inline struct Identifier *string_to_identifier(const char *str, int len) 
     ident->extra = 0;
 
     // Split up the string
+    int len = string_len(str);
     int a = 0;
     int b = 0;
     buf->y_len = 1;
