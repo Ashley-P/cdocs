@@ -40,6 +40,12 @@ struct Identifier {
     char extra:3;
 };
 
+// Enum pararms are slightly different from identifiers
+struct EnumMember {
+    char name[MAX_BUFSIZE_MED];
+    int num;
+};
+
 // Deconstructed function
 struct FunctionDecon {
     struct Identifier ident;
@@ -55,8 +61,16 @@ struct FunctionDecon {
 struct StructDecon {
     struct Identifier ident;
 
-    // Struct parameters - Linked list of functions params
+    // Struct parameters - Linked list of struct params
     struct Node *members;
+};
+
+// Deconstructed enum
+struct EnumDecon {
+    struct Identifier ident;
+
+    // Enum parameters - Linked list of enum params
+    struct Node *enums;
 };
 
 #endif

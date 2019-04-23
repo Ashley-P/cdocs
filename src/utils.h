@@ -33,6 +33,7 @@ void str_cpy(const char *src, char* dest);
 void str_cpy2(const char *src, char* dest, int len);
 int str_len_to_ch(const char *str, char ch);
 void string_cat(const char *src, char *dest, size_t src_sz, size_t dest_sz);
+int str_to_int(const char *str);
 void shift_chars_right(char *str, size_t sz, int shift_len, int shift_pos);
 void shift_chars_left(char *str, size_t sz, int shift_len, int shift_pos);
 char *consume_spaces(char *str);

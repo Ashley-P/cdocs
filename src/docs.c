@@ -271,6 +271,96 @@ struct Node *scan_file_structs(char *fp) {
     return struct_list;
 }
 
+struct Node *scan_file_enums(char *fp) {
+    struct FileBuffer *fb = load_file(fp);
+    static int enums_found;
+
+    /**
+     * @NOTE Assumptions for enums:
+     * 0. No leading spaces
+     * 1. Starts with the word "enum"
+     * 2. contain a curly bracket but no parentheses
+     * 
+     */
+    int a, b, i, j;
+    int str_len;
+    int equals, comma, enum_num; // Enum num is the number that the enum value is so we can copy it
+    char *member_start; // Required for "consume_spaces"
+    char tmp[MAX_BUFSIZE_TINY];
+    struct Node *enum_list = NULL;
+    struct EnumDecon *enm;
+    struct EnumMember *enum_member;
+    struct Identifier *identifier;
+
+    for (i = 0; i < fb->y_len_true; i++) {
+        a = 0; b = 0;
+
+        if (**(fb->buf + i) == ' ' || **(fb->buf + i) == '\n') {
+            continue;
+        } else if (string_cmp2(*(fb->buf + i), "enum", 4)) {
+            // If the string matches then we check to make sure it is a enum and not a function
+
+            str_len = string_len(*(fb->buf + i));
+            for (j = 0; j < str_len; j++) {
+                if (*(*(fb->buf + i) + j) == '(') a = 1;
+                else if (*(*(fb->buf + i) + j) == '{') b = 1;
+            }
+            if (a) continue;
+            else if (!b) continue;
+
+            // If we get here then the first line is the enum and the following lines are members
+            enm = malloc(sizeof(struct EnumDecon));
+            enm->enums = NULL;
+            identifier = string_to_identifier(*(fb->buf + i), str_len);
+            enm->ident = *identifier;
+            free(identifier);
+
+            member_start = consume_spaces(*(fb->buf + i));
+
+            // Iterate through the enum and make sure we don't copy junk lines
+            //for (j = 0; *member_start != '}'; j++) {
+            j = 0;
+            enum_num = 0;
+            do {
+                // If it starts with a '/' Then it's probably a comment same with '*'
+                if (**(fb->buf + i) == '\n' || **(fb->buf + i) == '/' || **(fb->buf + i) == '*') {
+                    j++;
+                    continue;
+                }
+
+                equals = seek_to_character(member_start, '=');
+                comma  = seek_to_character(member_start, ',');
+                enum_member = malloc(sizeof(struct EnumMember));
+
+                // If there is no equals, then the value is enum_num
+                if (equals == -1) {
+                    sprintf(enum_member->name, "%s", member_start);
+                    // Take out the comma
+                    *(enum_member->name + string_len(enum_member->name) - 1) = '\0';
+                    enum_member->num = enum_num++;
+
+                // Otherwise the line has a value that needs to be copied
+                } else {
+                    str_cpy2(member_start, enum_member->name, equals - 1);
+                    str_cpy2(member_start + equals + 1, tmp, comma - 1);
+                    enum_num = str_to_int(tmp);
+                    enum_member->num = enum_num++;
+                }
+
+                member_start = consume_spaces(*(fb->buf + i + ++j));
+                list_push_back(enm->enums, create_node(enum_member));
+            } while (*member_start != '}');
+
+            // Skipping the rest of the enum
+            i += j;
+            list_push_back(enum_list, create_node(enm));
+            printf("%d enums found!\r", ++enums_found);
+        }
+    }
+
+    return enum_list;
+}
+
 /**
  * This function scans the supplied string and returns an "Identifier" struct
  * Takes a length argument so I don't have to break up a string before entering it in

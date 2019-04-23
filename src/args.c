@@ -216,7 +216,6 @@ void c_regen(char *config) {
     printf("\n");
 
     // Collecting enums
-#if 0
     struct Node *enums = NULL;
     for (int i = 0; i < db->y_len; i++) {
         if (*(*(db->buf + i) + string_len(*(db->buf + i)) - 1) == 'c')
@@ -227,7 +226,6 @@ void c_regen(char *config) {
         }
     }
     printf("\n");
-#endif
 
     // Gen the template
     //gen_template(hb, tp, db, docgen->doc_dir);

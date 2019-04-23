@@ -293,6 +293,17 @@ void string_cat(const char *src, char *dest, size_t src_sz, size_t dest_sz) {
     *(dest + i + dest_len) = '\0';
 }
 
+int str_to_int(const char *str) {
+    int len = string_len(str);
+    int a = 0;
+    for (int i = 0; i < len; i++) {
+        a += ((int) *(str + i)) - 48;
+        a *= 10;
+    }
+    a /= 10;
+    return a;
+}
+
 void shift_chars_right(char *str, size_t sz, int shift_len, int shift_pos) {
     for (int i = sz; i >= shift_pos; i--) {
         if (i + shift_len >= sz) continue;
