@@ -1,6 +1,8 @@
 #include <stdlib.h>
 #include "ll.h"
 
+// Function Prototypes
+static inline void pop_node_(struct Node *node);
 
 
 
@@ -19,13 +21,29 @@ void delete_node(struct Node *node) {
     free(node);
 }
 
+#if 0
 void list_push_front(struct Node **head, struct Node *new_node) {
     new_node->next = *head;
     if (*head)
         (*head)->prev = new_node;
     *head = new_node;
 }
+#endif
 
+void list_push_front(struct List *list, struct Node *node) {
+    if (!list->head) {
+        list->head = node;
+        list->tail = node;
+    } else {
+        list->head->prev = node;
+        node->next = list->head;
+        list->head = node;
+    }
+
+    list->size++;
+}
+
+#if 0
 void list_push_back(struct Node *head, struct Node *new_node) {
      if (!head)
          head = new_node;
@@ -36,7 +54,21 @@ void list_push_back(struct Node *head, struct Node *new_node) {
         new_node->prev = head;
     }
 }
+#endif
 
+void list_push_back(struct List *list, struct Node *node) {
+    if (!list->tail) {
+        list_push_front(list, node);
+        return;
+    } else {
+        list->tail->next = node;
+        node->prev = list->tail;
+        list->tail = node;
+        list->size++;
+    }
+}
+
+#if 0
 struct Node *list_pop_front(struct Node **head) {
     struct Node *rtn = *head;
 
@@ -45,7 +77,22 @@ struct Node *list_pop_front(struct Node **head) {
 
     return rtn;
 }
+#endif
 
+struct Node *list_pop_front(struct List *list) {
+    struct *node rtn;
+    if (!list->head) {
+        return NULL;
+    } else {
+        rtn = list->head;
+        list->head = list->head->next;
+        list->head->prev = NULL;
+        list->size--;
+        return rtn;
+    }
+}
+
+#if 0
 struct Node *list_pop_back(struct Node *head) {
     struct Node *rtn;
 
@@ -58,9 +105,70 @@ struct Node *list_pop_back(struct Node *head) {
 
     return rtn;
 }
+#endif
+
+struct Node *list_pop_back(struct List *list) {
+    struct *node rtn;
+    if (!list->tail) {
+        return NULL;
+    } else {
+        rtn = list->tail;
+        list->tail = list->tail->prev;
+        list->tail->next = NULL;
+        list->size--;
+        return rtn;
+    }
+}
+
+// pops the node at the position
+struct Node *list_pop_node(struct List *list, unsigned int pos) {
+    struct Node *rtn;
+    struct Node *srch; // Node used for searching
+    if (pos == 0) {
+        rtn = list_pop_front(list);
+        list->size--;
+        retrun rtn;
+    } else if (pos == list->size) {
+        rtn = list_pop_back(list);
+        list->size--;
+        retrun rtn;
+    } else if (pos > list->size) {
+        return NULL;
+    } else {
+        srch = list->head;
+        for (int i = 0; i < pos; i++)
+            srch = srch->next;
+        pop_node_(node);
+    }
+}
+
+// -1 on failure
+int list_pop_node2(struct List *list, struct Node *node) {
+    struct Node *srch; // Node used for searching
+    if (node == list->head) {
+        list->head = list->head->next;
+    } else if (node == list->tail) {
+        list->tail = list->tail->prev;
+    } else {
+        srch = list->head;
+        while (srch->next != NULL) {
+            srch = srch->next;
+            if (srch == node) {
+                pop_node_(node);
+                list->size--;
+                return 1;
+            }
+        }
+        return -1;
+    }
+
+    pop_node_(node);
+    list->size--;
+    return 1;
+}
 
 // Unlinks the node from the list
-void list_remove_node(struct Node *node) {
+static inline void pop_node_(struct Node *node) {
     if (node->prev)
         node->prev->next = node->next;
 

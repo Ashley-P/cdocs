@@ -192,7 +192,11 @@ void c_regen(char *config) {
     // Scanning the files
     struct DirectoryBuffer *db = scan_directory(docgen->src_dir);
     if (!db) return;
-
+    /**
+     * Collecting all the relevant information in one pass of the files
+     * Instead of multiple passes like before
+     */
+#if 0
     // @TODO: The function/struct/etc collecting should be refactored
     // The template needs atleast the names of functions etc so we just deconstruct the whole thing
     // Here and pass it to gen_template
@@ -226,6 +230,7 @@ void c_regen(char *config) {
         }
     }
     printf("\n");
+#endif
 
     // Gen the template
     //gen_template(hb, tp, db, docgen->doc_dir);
