@@ -367,27 +367,49 @@ struct Node *scan_file_enums(char *fp) {
  * The new and improved scanning function
  * This scans an individual file and fills out the linked lists
  */
-void scan_file(char *fp, struct List *functions, struct List *structs, struct List *enums,
-        unsigned int *functions_found, unsigned int *structs_found, unsigned int *enums_found) {
+void scan_file(char *fp, struct List *functions, struct List *structs, struct List *enums, struct List *defines,
+        unsigned int *functions_found, unsigned int *structs_found, unsigned int *enums_found,
+        unsigned int *defines_found) {
+
+    struct FileBuffer *file = load_file(fp);
+    int i;
+    for (i = 0; i < file->y_len; i++) {
+        /**
+         * Basic assumptions:
+         * 0. Anything that we want is unindented
+         * 1. Identifiers are declared all on one line
+         * 2. Parameters can be on multiple lines
+         * 3. Defines are grouped based on empty lines
+         */ 
+        if (**(file->buf + i) == '\n' || **(file->buf + i) == ' ') {
+            continue;
+        }
+    }
 }
 
 /**
  * Scans a DirectoryBuffer and calls scan_file
  */
-void scan_files(struct DirectoryBuffer *db, struct List *functions, struct List *structs, struct List *enums) {
+void scan_files(struct DirectoryBuffer *db, struct List *functions, struct List *structs,
+        struct List *enums, struct List *defines) {
     unsigned int *functions_found = malloc(sizeof(unsigned int));
     unsigned int *structs_found   = malloc(sizeof(unsigned int));
     unsigned int *enums_found     = malloc(sizeof(unsigned int));
-    functions_found = 0;
-    structs_found   = 0;
-    enums_found     = 0;
+    unsigned int *defines_found   = malloc(sizeof(unsigned int));
+    *functions_found = 0;
+    *structs_found   = 0;
+    *enums_found     = 0;
+    *defines_found   = 0;
 
     for (int i = 0; i < db->y_len; i++) {
-        scan_file(*(db->buf + i), functions, structs, enums, functions_found, structs_found, enums_found);
+        scan_file(*(db->buf + i), functions, structs, enums, defines,
+                functions_found, structs_found, enums_found, defines_found);
     }
-    printf("%d functions found", *functions_found);
-    printf("%d structs found", *structs_found);
-    printf("%d enums found", *enums_found);
+
+    printf("%d functions found!\n", *functions_found);
+    printf("%d structs found!\n", *structs_found);
+    printf("%d enums found!\n", *enums_found);
+    printf("%d defines found!\n", *defines_found);
 }
 
 /**

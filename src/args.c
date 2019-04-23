@@ -199,9 +199,9 @@ void c_regen(char *config) {
     struct List *functions = list_init();
     struct List *structs = list_init();
     struct List *enums = list_init();
-    //struct List *defines;
+    struct List *defines = list_init();
 
-    scan_files(db, functions, structs, enums);
+    scan_files(db, functions, structs, enums, defines);
 
 #if 0              
     // @TODO: The function/struct/etc collecting should be refactored
