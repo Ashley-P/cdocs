@@ -2,7 +2,7 @@
 #include "ll.h"
 
 // Function Prototypes
-static inline void pop_node_(struct Node *node);
+static inline void unlink_node(struct Node *node);
 
 
 
@@ -80,7 +80,7 @@ struct Node *list_pop_front(struct Node **head) {
 #endif
 
 struct Node *list_pop_front(struct List *list) {
-    struct *node rtn;
+    struct Node *rtn;
     if (!list->head) {
         return NULL;
     } else {
@@ -108,7 +108,7 @@ struct Node *list_pop_back(struct Node *head) {
 #endif
 
 struct Node *list_pop_back(struct List *list) {
-    struct *node rtn;
+    struct Node *rtn;
     if (!list->tail) {
         return NULL;
     } else {
@@ -127,18 +127,19 @@ struct Node *list_pop_node(struct List *list, unsigned int pos) {
     if (pos == 0) {
         rtn = list_pop_front(list);
         list->size--;
-        retrun rtn;
+        return rtn;
     } else if (pos == list->size) {
         rtn = list_pop_back(list);
         list->size--;
-        retrun rtn;
+        return rtn;
     } else if (pos > list->size) {
         return NULL;
     } else {
         srch = list->head;
         for (int i = 0; i < pos; i++)
             srch = srch->next;
-        pop_node_(node);
+        unlink_node(srch);
+        return srch;
     }
 }
 
@@ -154,7 +155,7 @@ int list_pop_node2(struct List *list, struct Node *node) {
         while (srch->next != NULL) {
             srch = srch->next;
             if (srch == node) {
-                pop_node_(node);
+                unlink_node(node);
                 list->size--;
                 return 1;
             }
@@ -162,13 +163,13 @@ int list_pop_node2(struct List *list, struct Node *node) {
         return -1;
     }
 
-    pop_node_(node);
+    unlink_node(node);
     list->size--;
     return 1;
 }
 
 // Unlinks the node from the list
-static inline void pop_node_(struct Node *node) {
+static inline void unlink_node(struct Node *node) {
     if (node->prev)
         node->prev->next = node->next;
 

@@ -99,6 +99,7 @@ struct DirectoryBuffer *scan_directory(char *dir) {
     return db;
 }
 
+#if 0
 /**
  * Scans the file and returns each function definition
  * @NOTE Assumptions:
@@ -360,6 +361,7 @@ struct Node *scan_file_enums(char *fp) {
 
     return enum_list;
 }
+#endif
 
 /**
  * This function scans the supplied string and returns an "Identifier" struct
