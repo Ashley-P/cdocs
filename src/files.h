@@ -4,7 +4,7 @@
 #include "defs.h"
 
 // Extern Functions
-struct FileBuffer *create_file_buffer();
+struct FileBuffer *create_file_buffer(int y_len);
 void delete_file_buffer(struct FileBuffer *hb);
 struct FileBuffer *load_file(char *fn);
 void save_file(struct FileBuffer *hb, char *fn);

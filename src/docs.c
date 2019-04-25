@@ -10,13 +10,25 @@
 
 #include "docs.h"
 #include "files.h"
+#include "ll.h"
 #include "utils.h"
 
+enum LineType {
+    LT_INVALID,
+    LT_FUNCTION,
+    LT_STRUCT,
+    LT_ENUM,
+    LT_DEFINE,
+    LT_TYPEDEF,
+};
 
 
 
 // Function prototypes
+//enum LineType scan_line(char *str);
 static inline struct Identifier *string_to_identifier(const char *str);
+static inline struct StructDecon *parse_struct(struct FileBuffer *fb, unsigned int line);
+static inline struct FunctionDecon *parse_function(struct FileBuffer *fb, unsigned int line);
 static inline int seek_to_character(const char *str, char ch);
 
 
@@ -364,25 +376,95 @@ struct Node *scan_file_enums(char *fp) {
 #endif
 
 /**
+ * Scans a line and returns the type of that line
+ */
+enum LineType scan_line(char *str) {
+        int j;
+
+        if (*str == '\n' || *str == ' ' || *str == '/' || *str == '*' || *str == '}') {
+            return LT_INVALID;
+        } else if (*str == '#') {                                  // Defines
+            char *line = consume_spaces(str + 1);
+            if (string_cmp2(line, "define", 6)) {
+                return LT_DEFINE;
+            } else {
+                return LT_INVALID;
+            }
+
+        } else if (string_cmp2(str, "typedef", 7)) {              // Typedefs
+            return LT_TYPEDEF;
+
+        } else if (string_cmp2(str, "struct", 6)) {               // Structs  
+            // Make sure it is not a function by checking for some parentheses
+            for (j = 0; j < string_len(str); j++) {
+                if (*(str + j) == '(')
+                    return LT_FUNCTION;
+            }
+            return LT_STRUCT;
+
+        } else if (string_cmp2(str, "enum", 4)) {                // enums  
+            // Make sure it is not a function by checking for some parentheses
+            for (j = 0; j < string_len(str); j++) {
+                if (*(str + j) == '(')
+                    return LT_FUNCTION;
+            }
+            return LT_ENUM; 
+
+        } else {
+            //return LT_INVALID;
+            return LT_FUNCTION;
+        }
+
+}
+
+/**
  * The new and improved scanning function
  * This scans an individual file and fills out the linked lists
+ * Basic assumptions:
+ * 0. Anything that we want is unindented
+ * 1. Identifiers are declared all on one line
+ * 2. Parameters can be on multiple lines
+ * 3. Defines are grouped based on empty lines
+ * 4. Define lines start with '#' but there can be spaces after that
+ * 5. We aren't collecting function prototypes
+ * 6. The ends of functions are a single '}' on it's own line unindented
+ * 7. Defines can emulate Variables and Functions
+ * 8. Structs are not defined inside other structs
  */
 void scan_file(char *fp, struct List *functions, struct List *structs, struct List *enums, struct List *defines,
         unsigned int *functions_found, unsigned int *structs_found, unsigned int *enums_found,
         unsigned int *defines_found) {
 
     struct FileBuffer *file = load_file(fp);
+
     int i;
+    void *tmp; // Just to hold the structs that come from the "parse_*" functions
+
     for (i = 0; i < file->y_len; i++) {
-        /**
-         * Basic assumptions:
-         * 0. Anything that we want is unindented
-         * 1. Identifiers are declared all on one line
-         * 2. Parameters can be on multiple lines
-         * 3. Defines are grouped based on empty lines
-         */ 
-        if (**(file->buf + i) == '\n' || **(file->buf + i) == ' ') {
-            continue;
+        switch (scan_line(*(file->buf + i))) {
+            case LT_INVALID:
+                //continue;
+                break;
+            case LT_FUNCTION:
+                tmp = parse_function(file, i);
+                if (tmp) {
+                    (*functions_found)++;
+                    list_push_back(functions, create_node(tmp));
+                }
+                break;
+            case LT_STRUCT:
+                tmp = parse_struct(file, i);
+                if (tmp) {
+                    (*structs_found)++;
+                    list_push_back(structs, create_node(tmp));
+                }
+                break;
+            case LT_ENUM:
+                break;
+            case LT_DEFINE:
+                break;
+            default:
+                break;
         }
     }
 }
@@ -412,11 +494,97 @@ void scan_files(struct DirectoryBuffer *db, struct List *functions, struct List 
     printf("%d defines found!\n", *defines_found);
 }
 
+static inline struct FunctionDecon *parse_function(struct FileBuffer *fb, unsigned int line) {
+    struct FunctionDecon *rtn = calloc(1, sizeof(struct FunctionDecon));
+    struct Identifier *ident;
+
+    // Since functions can be defined over multiple lines if they have lots of arguments
+    // We check for the opening curly brace and keep appending the lines if we don't find one
+    char *func_str = calloc(MAX_BUFSIZE_MED, sizeof(char));
+    int a, b, c;
+    int z = line;
+
+    while (1) {
+        sprintf(func_str, "%s%s", func_str, consume_spaces(*(fb->buf + z)));
+        a = ch_in_str('{', *(fb->buf + z));
+        b = ch_in_str(';', *(fb->buf + z));
+        c = ch_in_str('=', *(fb->buf + z));
+        if (b || c)
+            return NULL;
+        else if (a)
+            break;
+        else  {
+            z++;
+            sprintf(func_str, "%s, ", func_str);
+        }
+    }
+
+    // Splitting up the string
+    struct FileBuffer *func_params = create_file_buffer(MAX_BUFSIZE_TINY);
+
+    a = 0;
+    int y_pos = 0;
+    int x_pos = 0;
+    char ch;
+
+    while ((ch = *(func_str + a)) != '\n') {
+        if (ch == ',' || ch == '(' || ch == ')') {
+            func_params->y_len++;
+            a++;
+            y_pos++;
+            x_pos = 0;
+        } else {
+            *(*(func_params->buf + y_pos) + x_pos) = ch;
+            x_pos++;
+            a++;
+        }
+    }
+
+    // First in the buffer is the function identifier
+    ident = string_to_identifier(*(func_params->buf));
+    rtn->ident = *ident;
+    free(ident);
+
+    for (int i = 1; i < func_params->y_len; i++)
+        list_push_back(&rtn->params, create_node(string_to_identifier(*(func_params->buf + i))));
+
+    free(func_str);
+    free(func_params);
+    return rtn;
+}
+
+
+static inline struct StructDecon *parse_struct(struct FileBuffer *fb, unsigned int line) {
+    // Calloc is used so the List struct inside doesn't have dangling pointers
+    struct StructDecon *rtn = calloc(1, sizeof(struct StructDecon));
+    struct Identifier *ident;
+
+    // Copying the identifier
+    ident = string_to_identifier(*(fb->buf + line++));
+    rtn->ident = *ident;
+    free(ident);
+    char *str;
+    while (**(fb->buf + line) != '}') {
+        str = consume_spaces(*(fb->buf + line));
+        if (*str == '/' || *str == '*' || *str == '\n') {
+            line++;
+            continue;
+        } else {
+            list_push_back(&rtn->members, create_node(string_to_identifier(str)));
+            line++;
+        }
+    }
+
+    return rtn;
+}
+
+
 /**
  * This function scans the supplied string and returns an "Identifier" struct
  * Takes a length argument so I don't have to break up a string before entering it in
  * @NOTE @TODO: Can't collect function pointers yet
  * @NOTE @TODO: Can't collect arrays that look like this "arr[size]";
+ * @NOTE @TODO: Can't collect "unsigned"
  */
 static inline struct Identifier *string_to_identifier(const char *str) {
     //printf("%s\n", str);

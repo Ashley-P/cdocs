@@ -304,6 +304,15 @@ int str_to_int(const char *str) {
     return a;
 }
 
+int ch_in_str(const char ch, const char *str) {
+    for (int i = 0;; i++) {
+        if (*(str + i) == '\0') return 0;
+        else if (ch == *(str + i)) return 1;
+        else continue;
+    }
+
+}
+
 void shift_chars_right(char *str, size_t sz, int shift_len, int shift_pos) {
     for (int i = sz; i >= shift_pos; i--) {
         if (i + shift_len >= sz) continue;

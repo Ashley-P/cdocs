@@ -1,6 +1,7 @@
 #ifndef DEFS_H
 #define DEFS_H
 
+
 #define MAX_BUFSIZE_TINY  16
 #define MAX_BUFSIZE_MINI  64
 #define MAX_BUFSIZE_SMALL 256
@@ -26,51 +27,5 @@ struct DirectoryBuffer {
 #define IDENTIFIER_CONST  0x02
 #define IDENTIFIER_INLINE 0x01
 
-struct Identifier {
-    // Name of the function/struct/etc
-    char name[MAX_BUFSIZE_MED];
-    char type[MAX_BUFSIZE_MED];
-    int ptr;
-    /**
-     * MSB TO LSB
-     * is static?
-     * is const?
-     * is inline?
-     */
-    char extra:3;
-};
-
-// Enum pararms are slightly different from identifiers
-struct EnumMember {
-    char name[MAX_BUFSIZE_MED];
-    int num;
-};
-
-// Deconstructed function
-struct FunctionDecon {
-    struct Identifier ident;
-
-    // Function parameters - Linked list of functions params
-    struct Node *params;
-
-    // source code - NOT YET IMPLEMENTED
-    struct FileBuffer;
-};
-
-// Deconstructed struct
-struct StructDecon {
-    struct Identifier ident;
-
-    // Struct parameters - Linked list of struct params
-    struct Node *members;
-};
-
-// Deconstructed enum
-struct EnumDecon {
-    struct Identifier ident;
-
-    // Enum parameters - Linked list of enum params
-    struct Node *enums;
-};
 
 #endif
