@@ -28,6 +28,7 @@ enum LineType {
 //enum LineType scan_line(char *str);
 static inline struct Identifier *string_to_identifier(const char *str);
 static inline struct StructDecon *parse_struct(struct FileBuffer *fb, unsigned int line);
+static inline struct EnumDecon *parse_enum(struct FileBuffer *fb, unsigned int line);
 static inline struct FunctionDecon *parse_function(struct FileBuffer *fb, unsigned int line);
 static inline int seek_to_character(const char *str, char ch);
 
@@ -460,6 +461,11 @@ void scan_file(char *fp, struct List *functions, struct List *structs, struct Li
                 }
                 break;
             case LT_ENUM:
+                tmp = parse_enum(file, i);
+                if (tmp) {
+                    (*enums_found)++;
+                    list_push_back(enums, create_node(tmp));
+                }
                 break;
             case LT_DEFINE:
                 break;
@@ -563,6 +569,7 @@ static inline struct StructDecon *parse_struct(struct FileBuffer *fb, unsigned i
     ident = string_to_identifier(*(fb->buf + line++));
     rtn->ident = *ident;
     free(ident);
+
     char *str;
     while (**(fb->buf + line) != '}') {
         str = consume_spaces(*(fb->buf + line));
@@ -578,13 +585,78 @@ static inline struct StructDecon *parse_struct(struct FileBuffer *fb, unsigned i
     return rtn;
 }
 
+static inline struct EnumDecon *parse_enum(struct FileBuffer *fb, unsigned int line) {
+    struct EnumDecon *rtn = calloc(1, sizeof(struct EnumDecon));
+    struct Identifier *ident;
+    struct EnumMember *member;
+
+    ident = string_to_identifier(*(fb->buf + line++));
+    rtn->ident = *ident;
+    free(ident);
+
+    char *str;
+    struct FileBuffer *decon = create_file_buffer(MAX_BUFSIZE_TINY);
+    int a;
+    int y_pos;
+    int x_pos;
+    char ch;
+    int enum_num = 0;
+
+    while (**(fb->buf + line) != '}') {
+        str = consume_spaces(*(fb->buf + line));
+
+        // Splitting up the string
+        if (*str == '/' || *str == '*' || *str == '\n') {
+            line++;
+        } else {
+            a = 0;
+            y_pos = 0;
+            x_pos = 0;
+
+            decon = create_file_buffer(MAX_BUFSIZE_TINY);
+            member = malloc(sizeof(struct EnumMember));
+            while ((ch = *(str + a)) != '\n') {
+                if (ch == ',' || ch == '=' || ch == ')') {
+                    decon->y_len++;
+                    a++;
+                    y_pos++;
+                    x_pos = 0;
+                } else if (ch == ' ') {
+                    a++;
+                } else {
+                    *(*(decon->buf + y_pos) + x_pos) = ch;
+                    x_pos++;
+                    a++;
+                }
+            }
+
+                sprintf(member->name, "%s", *(decon->buf));
+            if (decon->y_len == 1) {
+                member->num = enum_num++;
+            } else if (decon->y_len == 2) {
+                enum_num = str_to_int(*(decon->buf + 1));
+                member->num = enum_num;
+            }
+
+            list_push_back(&rtn->enums, create_node(member));
+
+            free(decon);
+            line++;
+        }
+    }
+
+    free(decon);
+    return rtn;
+}
+
 
 /**
  * This function scans the supplied string and returns an "Identifier" struct
  * Takes a length argument so I don't have to break up a string before entering it in
  * @NOTE @TODO: Can't collect function pointers yet
  * @NOTE @TODO: Can't collect arrays that look like this "arr[size]";
- * @NOTE @TODO: Can't collect "unsigned"
+ * @NOTE @TODO: Can't collect "unsigned" or "signed"
+ * @FIXME : I should just probably redo this function
  */
 static inline struct Identifier *string_to_identifier(const char *str) {
     //printf("%s\n", str);
