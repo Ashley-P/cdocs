@@ -206,9 +206,12 @@ void c_regen(char *config) {
 
     scan_files(db, functions, structs, enums, defines);
 
+    // @TODO: Do some sorting on the completed lists?
+
     // Gen the template
     gen_template(template_fb, tp, db, functions, structs, enums, defines, docgen->doc_dir);
-    printf("Valid!");
+    printf("Template Created");
+    //getch();
 
     free(template);
     free(js);

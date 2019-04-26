@@ -73,9 +73,10 @@ void gen_template(struct FileBuffer *template_fb, struct TemplatePositions *tp, 
     // Loop over the directory buffer
     int len;
     char *fname;
+    int i;
 
-
-    for (int i = 0; i < db->y_len; i++) {
+    // Files
+    for (i = 0; i < db->y_len; i++) {
         fname = get_filename(*(db->buf + i));
         // Check if the file is a header or a source file
         len = string_len(fname);
@@ -86,6 +87,59 @@ void gen_template(struct FileBuffer *template_fb, struct TemplatePositions *tp, 
         free(fname);
     }
 
+    // Have to recheck the template every time
+    recheck_template_positions(template_fb, tp);
+
+    // Functions
+    struct Node *node = functions->head;
+    struct FunctionDecon *f;
+
+    while (node) {
+        f = node->data;
+        add_hyperlink(template_fb, doc_dir, f->ident.name, tp->sidenav_functions + 1);
+        node = node->next;
+    }
+
+    // Have to recheck the template every time
+    recheck_template_positions(template_fb, tp);
+
+    // Structs
+    node = structs->head;
+    struct StructDecon *s;
+
+    while (node) {
+        s = node->data;
+        add_hyperlink(template_fb, doc_dir, s->ident.name, tp->sidenav_structs + 1);
+        node = node->next;
+    }
+
+    // Have to recheck the template every time
+    recheck_template_positions(template_fb, tp);
+
+    // Enums
+    node = enums->head;
+    struct EnumDecon *e;
+
+    while (node) {
+        e = node->data;
+        add_hyperlink(template_fb, doc_dir, e->ident.name, tp->sidenav_enums + 1);
+        node = node->next;
+    }
+
+    // Have to recheck the template every time
+    recheck_template_positions(template_fb, tp);
+
+    /* Defines aren't implemented yet
+    // Defines
+    node = defines->head;
+    struct DefineDecon *d;
+
+    while (node) {
+        d = node->data;
+        add_hyperlink(template_fb, doc_dir, d->ident.name, tp->sidenav_defines + 1);
+        node = node->next;
+    }
+    */
 
 
     // Save the custom template to the docs folder
