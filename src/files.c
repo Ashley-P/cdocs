@@ -107,3 +107,29 @@ static inline int lines_in_file(const char *fn) {
     fclose(f);
     return cnt;
 }
+
+// Because the shift pointers function is broken
+void buffer_insert_line(struct FileBuffer *fb, char *line, unsigned int position) {
+    // Check to see if there is enough space otherwise we just double y_len_true
+    if (fb->y_len == fb->y_len_true) {
+        fb->buf = realloc(fb->buf, fb->y_len_true * 2 * sizeof(char *));
+        fb->y_len_true = fb->y_len_true * 2;
+
+        // Allocating new memory
+        for (int i = fb->y_len_true / 2; i < fb->y_len_true; i++)
+            *(fb->buf + i) = calloc(fb->x_len, sizeof(char));
+
+    }
+
+    // free the pointer at the end
+    free(*(fb->buf + fb->y_len_true - 1));
+
+    // Shift everything to the right 
+    for (int i = fb->y_len_true - 1; i > position; i--) {
+        *(fb->buf + i) = *(fb->buf + i - 1);
+    }
+ 
+    // Insert the line
+    *(fb->buf + position) = line;
+    fb->y_len++;
+}

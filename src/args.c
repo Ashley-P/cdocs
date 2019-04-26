@@ -185,13 +185,16 @@ void c_regen(char *config) {
 #endif
 
     // Loading the template for pre-editing before generating the documents
-    struct FileBuffer *hb = load_file(template);
+    struct FileBuffer *template_fb = load_file(template);
     struct TemplatePositions *tp = malloc(sizeof(struct TemplatePositions));
-    recheck_template_positions(hb, tp);
+    recheck_template_positions(template_fb, tp);
 
     // Scanning the files
     struct DirectoryBuffer *db = scan_directory(docgen->src_dir);
-    if (!db) return;
+    if (!db) {
+        fprintf(stderr, "Couldn't scan directory");
+        return;
+    }
     /**
      * Collecting all the relevant information in one pass of the files
      * Instead of multiple passes like before
@@ -203,44 +206,8 @@ void c_regen(char *config) {
 
     scan_files(db, functions, structs, enums, defines);
 
-#if 0              
-    // @TODO: The function/struct/etc collecting should be refactored
-    // The template needs atleast the names of functions etc so we just deconstruct the whole thing
-    // Here and pass it to gen_template
-    // We should only search for functions in .c files
-    struct Node *functions = NULL;
-    struct Node *temp;
-
-    for (int i = 0; i < db->y_len; i++) {
-        temp = scan_file_functions(*(db->buf + i));
-        list_push_back(functions, temp);
-    }
-    printf("\n");
-
-    // Collecting structs
-    struct Node *structs = NULL;
-
-    for (int i = 0; i < db->y_len; i++) {
-        temp = scan_file_structs(*(db->buf + i));
-        list_push_back(structs, temp);
-    }
-    printf("\n");
-
-    // Collecting enums
-    struct Node *enums = NULL;
-    for (int i = 0; i < db->y_len; i++) {
-        if (*(*(db->buf + i) + string_len(*(db->buf + i)) - 1) == 'c')
-            continue;
-        else {
-            temp = scan_file_enums(*(db->buf + i));
-            list_push_back(enums, temp);
-        }
-    }
-    printf("\n");
-#endif
-
     // Gen the template
-    //gen_template(hb, tp, db, docgen->doc_dir);
+    gen_template(template_fb, tp, db, functions, structs, enums, defines, docgen->doc_dir);
     printf("Valid!");
 
     free(template);

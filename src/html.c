@@ -64,14 +64,16 @@ int recheck_template_positions(const struct FileBuffer *fb, struct TemplatePosit
 /**
  * This edits the loaded template and customizes it to fit the source files
  * @TODO: Proper indenting
+ * Directory buffer is needed for the filenames
  */
-void gen_template(struct FileBuffer *template_fb, struct TemplatePositions *tp,
-        struct DirectoryBuffer *db, char *doc_dir) {
+void gen_template(struct FileBuffer *template_fb, struct TemplatePositions *tp, struct DirectoryBuffer *db, 
+        struct List *functions, struct List *structs, struct List *enums, struct List *defines, char *doc_dir) {
     // Generating the file section in sidenav
     // @TODO: We need to match headers with the source files so we can combine their pages
     // Loop over the directory buffer
     int len;
     char *fname;
+
 
     for (int i = 0; i < db->y_len; i++) {
         fname = get_filename(*(db->buf + i));
@@ -85,6 +87,7 @@ void gen_template(struct FileBuffer *template_fb, struct TemplatePositions *tp,
     }
 
 
+
     // Save the custom template to the docs folder
     char fn[MAX_BUFSIZE_MED];
     sprintf(fn, "%stemplates\\template.html", doc_dir);
@@ -95,12 +98,9 @@ void gen_template(struct FileBuffer *template_fb, struct TemplatePositions *tp,
  * Creates a hyper link at the line provided in the buffer
  */
 static inline void add_hyperlink(struct FileBuffer *fb, char *docs, char *name, int pos) {
-    shift_pointers_right((void **) fb->buf, MAX_BUFSIZE_MED, 1, pos);
-    *(fb->buf + pos) = calloc(MAX_BUFSIZE_SMALL, sizeof(char));
-
-    // Construct the string
-    sprintf(*(fb->buf + pos), "<a href=\"%s%s.html\">%s</a>\n", docs, name, name);
-    fb->y_len++;
+    char *line = calloc(MAX_BUFSIZE_MED, sizeof(char));
+    sprintf(line, "<a href=\"%s%s.html\">%s</a>\n", docs, name, name);
+    buffer_insert_line(fb, line, pos);
 }
 
 /**

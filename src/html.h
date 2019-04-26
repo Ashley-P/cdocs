@@ -18,6 +18,6 @@ struct TemplatePositions {
 // Extern Functions
 unsigned short find_comment(const struct FileBuffer *hbf, char *comment);
 int recheck_template_positions(const struct FileBuffer *hb, struct TemplatePositions *tp);
-void gen_template(struct FileBuffer *hb, struct TemplatePositions *tp, struct DirectoryBuffer *db, char *docs);
-
+void gen_template(struct FileBuffer *template_fb, struct TemplatePositions *tp, struct DirectoryBuffer *db, 
+        struct List *functions, struct List *structs, struct List *enums, struct List *defines, char *doc_dir);
 #endif
