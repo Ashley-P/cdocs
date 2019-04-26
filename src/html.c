@@ -109,7 +109,7 @@ void gen_template(struct FileBuffer *template_fb, struct TemplatePositions *tp, 
 
     while (node) {
         s = node->data;
-        add_hyperlink(template_fb, doc_dir, s->ident.name, tp->sidenav_structs + 1);
+        add_hyperlink(template_fb, doc_dir, s->ident.type, tp->sidenav_structs + 1);
         node = node->next;
     }
 
@@ -122,7 +122,7 @@ void gen_template(struct FileBuffer *template_fb, struct TemplatePositions *tp, 
 
     while (node) {
         e = node->data;
-        add_hyperlink(template_fb, doc_dir, e->ident.name, tp->sidenav_enums + 1);
+        add_hyperlink(template_fb, doc_dir, e->ident.type, tp->sidenav_enums + 1);
         node = node->next;
     }
 

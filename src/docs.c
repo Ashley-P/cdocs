@@ -301,7 +301,6 @@ static inline struct StructDecon *parse_struct(struct FileBuffer *fb, unsigned i
     struct StructDecon *rtn = calloc(1, sizeof(struct StructDecon));
     struct Identifier *ident;
 
-    printf("\n%s\n", *(fb->buf + line++));
     // Copying the identifier
     ident = string_to_identifier(*(fb->buf + line++));
     rtn->ident = *ident;
@@ -318,8 +317,6 @@ static inline struct StructDecon *parse_struct(struct FileBuffer *fb, unsigned i
             line++;
         }
     }
-
-    printf("\n%s\n", rtn->ident.name);
 
     return rtn;
 }
